@@ -1,0 +1,222 @@
+\documentclass[12pt]{article}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage[paperwidth=15cm, paperheight=15cm, margin=1cm]{geometry}
+\begin{document}
+\begin{tikzpicture}
+	\begin{axis}[
+	xtick={1,...,10},
+	ytick={1,...,10},
+	width=11cm,
+	height=11cm,
+	xmin=0.5,
+	xmax=10.5,
+	ymin=0.5,
+	ymax=10.5,
+	xlabel={$x$},
+	ylabel={$y$},
+	grid=major,
+	title=\color{red}sender\color{black}/\color{blue}receiver \color{black} location and \color{cyan}area covered\color{black}]
+    \addplot[only marks,mark=square*,blue!30,opacity=.7,mark size=0.42cm] coordinates{(1,1)};
+    \node at (axis cs:1,1) [above,font=\scriptsize] {-22};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(1,2)};
+    \node at (axis cs:1,2) [above,font=\scriptsize] {-65};
+    \addplot[only marks,mark=square*,blue!33,opacity=.7,mark size=0.42cm] coordinates{(1,3)};
+    \node at (axis cs:1,3) [above,font=\scriptsize] {-105};
+    \addplot[only marks,mark=square*,blue!38,opacity=.7,mark size=0.42cm] coordinates{(1,4)};
+    \node at (axis cs:1,4) [above,font=\scriptsize] {-270};
+    \addplot[only marks,mark=square*,blue!64,opacity=.7,mark size=0.42cm] coordinates{(1,5)};
+    \node at (axis cs:1,5) [above,font=\scriptsize] {-1168};
+    \addplot[only marks,mark=square*,blue!80,opacity=.7,mark size=0.42cm] coordinates{(1,6)};
+    \node at (axis cs:1,6) [above,font=\scriptsize] {-1681};
+    \addplot[only marks,mark=square*,blue!86,opacity=.7,mark size=0.42cm] coordinates{(1,7)};
+    \node at (axis cs:1,7) [above,font=\scriptsize] {-1886};
+    \addplot[only marks,mark=square*,blue!87,opacity=.7,mark size=0.42cm] coordinates{(1,8)};
+    \node at (axis cs:1,8) [above,font=\scriptsize] {-1941};
+    \addplot[only marks,mark=square*,blue!87,opacity=.7,mark size=0.42cm] coordinates{(1,9)};
+    \node at (axis cs:1,9) [above,font=\scriptsize] {-1921};
+    \addplot[only marks,mark=square*,blue!87,opacity=.7,mark size=0.42cm] coordinates{(1,10)};
+    \node at (axis cs:1,10) [above,font=\scriptsize] {-1928};
+    \addplot[only marks,mark=square*,green!33,opacity=.7,mark size=0.42cm] coordinates{(2,1)};
+    \node at (axis cs:2,1) [above,font=\scriptsize] {46};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(2,2)};
+    \node at (axis cs:2,2) [above,font=\scriptsize] {-50};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(2,3)};
+    \node at (axis cs:2,3) [above,font=\scriptsize] {-81};
+    \addplot[only marks,mark=square*,blue!34,opacity=.7,mark size=0.42cm] coordinates{(2,4)};
+    \node at (axis cs:2,4) [above,font=\scriptsize] {-160};
+    \addplot[only marks,mark=square*,blue!59,opacity=.7,mark size=0.42cm] coordinates{(2,5)};
+    \node at (axis cs:2,5) [above,font=\scriptsize] {-993};
+    \addplot[only marks,mark=square*,blue!77,opacity=.7,mark size=0.42cm] coordinates{(2,6)};
+    \node at (axis cs:2,6) [above,font=\scriptsize] {-1607};
+    \addplot[only marks,mark=square*,blue!87,opacity=.7,mark size=0.42cm] coordinates{(2,7)};
+    \node at (axis cs:2,7) [above,font=\scriptsize] {-1918};
+    \addplot[only marks,mark=square*,blue!92,opacity=.7,mark size=0.42cm] coordinates{(2,8)};
+    \node at (axis cs:2,8) [above,font=\scriptsize] {-2100};
+    \addplot[only marks,mark=square*,blue!94,opacity=.7,mark size=0.42cm] coordinates{(2,9)};
+    \node at (axis cs:2,9) [above,font=\scriptsize] {-2148};
+    \addplot[only marks,mark=square*,blue!90,opacity=.7,mark size=0.42cm] coordinates{(2,10)};
+    \node at (axis cs:2,10) [above,font=\scriptsize] {-2038};
+    \addplot[only marks,mark=square*,green!39,opacity=.7,mark size=0.42cm] coordinates{(3,1)};
+    \node at (axis cs:3,1) [above,font=\scriptsize] {125};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(3,2)};
+    \node at (axis cs:3,2) [above,font=\scriptsize] {-36};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(3,3)};
+    \node at (axis cs:3,3) [above,font=\scriptsize] {-66};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(3,4)};
+    \node at (axis cs:3,4) [above,font=\scriptsize] {-98};
+    \addplot[only marks,mark=square*,blue!50,opacity=.7,mark size=0.42cm] coordinates{(3,5)};
+    \node at (axis cs:3,5) [above,font=\scriptsize] {-685};
+    \addplot[only marks,mark=square*,blue!74,opacity=.7,mark size=0.42cm] coordinates{(3,6)};
+    \node at (axis cs:3,6) [above,font=\scriptsize] {-1477};
+    \addplot[only marks,mark=square*,blue!86,opacity=.7,mark size=0.42cm] coordinates{(3,7)};
+    \node at (axis cs:3,7) [above,font=\scriptsize] {-1885};
+    \addplot[only marks,mark=square*,blue!92,opacity=.7,mark size=0.42cm] coordinates{(3,8)};
+    \node at (axis cs:3,8) [above,font=\scriptsize] {-2106};
+    \addplot[only marks,mark=square*,blue!96,opacity=.7,mark size=0.42cm] coordinates{(3,9)};
+    \node at (axis cs:3,9) [above,font=\scriptsize] {-2216};
+    \addplot[only marks,mark=square*,blue!98,opacity=.7,mark size=0.42cm] coordinates{(3,10)};
+    \node at (axis cs:3,10) [above,font=\scriptsize] {-2283};
+    \addplot[only marks,mark=square*,green!41,opacity=.7,mark size=0.42cm] coordinates{(4,1)};
+    \node at (axis cs:4,1) [above,font=\scriptsize] {156};
+    \addplot[only marks,mark=square*,green!36,opacity=.7,mark size=0.42cm] coordinates{(4,2)};
+    \node at (axis cs:4,2) [above,font=\scriptsize] {87};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(4,3)};
+    \node at (axis cs:4,3) [above,font=\scriptsize] {-40};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(4,4)};
+    \node at (axis cs:4,4) [above,font=\scriptsize] {-91};
+    \addplot[only marks,mark=square*,blue!39,opacity=.7,mark size=0.42cm] coordinates{(4,5)};
+    \node at (axis cs:4,5) [above,font=\scriptsize] {-327};
+    \addplot[only marks,mark=square*,blue!68,opacity=.7,mark size=0.42cm] coordinates{(4,6)};
+    \node at (axis cs:4,6) [above,font=\scriptsize] {-1273};
+    \addplot[only marks,mark=square*,blue!83,opacity=.7,mark size=0.42cm] coordinates{(4,7)};
+    \node at (axis cs:4,7) [above,font=\scriptsize] {-1781};
+    \addplot[only marks,mark=square*,blue!89,opacity=.7,mark size=0.42cm] coordinates{(4,8)};
+    \node at (axis cs:4,8) [above,font=\scriptsize] {-1979};
+    \addplot[only marks,mark=square*,blue!94,opacity=.7,mark size=0.42cm] coordinates{(4,9)};
+    \node at (axis cs:4,9) [above,font=\scriptsize] {-2147};
+    \addplot[only marks,mark=square*,blue!100,opacity=.7,mark size=0.42cm] coordinates{(4,10)};
+    \node at (axis cs:4,10) [above,font=\scriptsize] {-2345};
+    \addplot[only marks,mark=square*,green!53,opacity=.7,mark size=0.42cm] coordinates{(5,1)};
+    \node at (axis cs:5,1) [above,font=\scriptsize] {303};
+    \addplot[only marks,mark=square*,green!40,opacity=.7,mark size=0.42cm] coordinates{(5,2)};
+    \node at (axis cs:5,2) [above,font=\scriptsize] {131};
+    \addplot[only marks,mark=square*,green!34,opacity=.7,mark size=0.42cm] coordinates{(5,3)};
+    \node at (axis cs:5,3) [above,font=\scriptsize] {59};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(5,4)};
+    \node at (axis cs:5,4) [above,font=\scriptsize] {-67};
+    \addplot[only marks,mark=square*,blue!35,opacity=.7,mark size=0.42cm] coordinates{(5,5)};
+    \node at (axis cs:5,5) [above,font=\scriptsize] {-174};
+    \addplot[only marks,mark=square*,blue!60,opacity=.7,mark size=0.42cm] coordinates{(5,6)};
+    \node at (axis cs:5,6) [above,font=\scriptsize] {-1023};
+    \addplot[only marks,mark=square*,blue!75,opacity=.7,mark size=0.42cm] coordinates{(5,7)};
+    \node at (axis cs:5,7) [above,font=\scriptsize] {-1521};
+    \addplot[only marks,mark=square*,blue!83,opacity=.7,mark size=0.42cm] coordinates{(5,8)};
+    \node at (axis cs:5,8) [above,font=\scriptsize] {-1787};
+    \addplot[only marks,mark=square*,blue!88,opacity=.7,mark size=0.42cm] coordinates{(5,9)};
+    \node at (axis cs:5,9) [above,font=\scriptsize] {-1960};
+    \addplot[only marks,mark=square*,blue!94,opacity=.7,mark size=0.42cm] coordinates{(5,10)};
+    \node at (axis cs:5,10) [above,font=\scriptsize] {-2158};
+    \addplot[only marks,mark=square*,green!55,opacity=.7,mark size=0.42cm] coordinates{(6,1)};
+    \node at (axis cs:6,1) [above,font=\scriptsize] {340};
+    \addplot[only marks,mark=square*,green!49,opacity=.7,mark size=0.42cm] coordinates{(6,2)};
+    \node at (axis cs:6,2) [above,font=\scriptsize] {258};
+    \addplot[only marks,mark=square*,green!46,opacity=.7,mark size=0.42cm] coordinates{(6,3)};
+    \node at (axis cs:6,3) [above,font=\scriptsize] {221};
+    \addplot[only marks,mark=square*,green!32,opacity=.7,mark size=0.42cm] coordinates{(6,4)};
+    \node at (axis cs:6,4) [above,font=\scriptsize] {27};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(6,5)};
+    \node at (axis cs:6,5) [above,font=\scriptsize] {-76};
+    \addplot[only marks,mark=square*,blue!40,opacity=.7,mark size=0.42cm] coordinates{(6,6)};
+    \node at (axis cs:6,6) [above,font=\scriptsize] {-340};
+    \addplot[only marks,mark=square*,blue!64,opacity=.7,mark size=0.42cm] coordinates{(6,7)};
+    \node at (axis cs:6,7) [above,font=\scriptsize] {-1153};
+    \addplot[only marks,mark=square*,blue!76,opacity=.7,mark size=0.42cm] coordinates{(6,8)};
+    \node at (axis cs:6,8) [above,font=\scriptsize] {-1550};
+    \addplot[only marks,mark=square*,blue!80,opacity=.7,mark size=0.42cm] coordinates{(6,9)};
+    \node at (axis cs:6,9) [above,font=\scriptsize] {-1705};
+    \addplot[only marks,mark=square*,blue!93,opacity=.7,mark size=0.42cm] coordinates{(6,10)};
+    \node at (axis cs:6,10) [above,font=\scriptsize] {-2143};
+    \addplot[only marks,mark=square*,green!63,opacity=.7,mark size=0.42cm] coordinates{(7,1)};
+    \node at (axis cs:7,1) [above,font=\scriptsize] {433};
+    \addplot[only marks,mark=square*,green!55,opacity=.7,mark size=0.42cm] coordinates{(7,2)};
+    \node at (axis cs:7,2) [above,font=\scriptsize] {330};
+    \addplot[only marks,mark=square*,green!63,opacity=.7,mark size=0.42cm] coordinates{(7,3)};
+    \node at (axis cs:7,3) [above,font=\scriptsize] {441};
+    \addplot[only marks,mark=square*,green!43,opacity=.7,mark size=0.42cm] coordinates{(7,4)};
+    \node at (axis cs:7,4) [above,font=\scriptsize] {179};
+    \addplot[only marks,mark=square*,green!33,opacity=.7,mark size=0.42cm] coordinates{(7,5)};
+    \node at (axis cs:7,5) [above,font=\scriptsize] {47};
+    \addplot[only marks,mark=square*,blue!31,opacity=.7,mark size=0.42cm] coordinates{(7,6)};
+    \node at (axis cs:7,6) [above,font=\scriptsize] {-65};
+    \addplot[only marks,mark=square*,blue!42,opacity=.7,mark size=0.42cm] coordinates{(7,7)};
+    \node at (axis cs:7,7) [above,font=\scriptsize] {-404};
+    \addplot[only marks,mark=square*,blue!65,opacity=.7,mark size=0.42cm] coordinates{(7,8)};
+    \node at (axis cs:7,8) [above,font=\scriptsize] {-1201};
+    \addplot[only marks,mark=square*,blue!66,opacity=.7,mark size=0.42cm] coordinates{(7,9)};
+    \node at (axis cs:7,9) [above,font=\scriptsize] {-1234};
+    \addplot[only marks,mark=square*,blue!75,opacity=.7,mark size=0.42cm] coordinates{(7,10)};
+    \node at (axis cs:7,10) [above,font=\scriptsize] {-1515};
+    \addplot[only marks,mark=square*,green!58,opacity=.7,mark size=0.42cm] coordinates{(8,1)};
+    \node at (axis cs:8,1) [above,font=\scriptsize] {374};
+    \addplot[only marks,mark=square*,green!58,opacity=.7,mark size=0.42cm] coordinates{(8,2)};
+    \node at (axis cs:8,2) [above,font=\scriptsize] {367};
+    \addplot[only marks,mark=square*,green!72,opacity=.7,mark size=0.42cm] coordinates{(8,3)};
+    \node at (axis cs:8,3) [above,font=\scriptsize] {561};
+    \addplot[only marks,mark=square*,green!55,opacity=.7,mark size=0.42cm] coordinates{(8,4)};
+    \node at (axis cs:8,4) [above,font=\scriptsize] {334};
+    \addplot[only marks,mark=square*,green!65,opacity=.7,mark size=0.42cm] coordinates{(8,5)};
+    \node at (axis cs:8,5) [above,font=\scriptsize] {462};
+    \addplot[only marks,mark=square*,green!41,opacity=.7,mark size=0.42cm] coordinates{(8,6)};
+    \node at (axis cs:8,6) [above,font=\scriptsize] {145};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(8,7)};
+    \node at (axis cs:8,7) [above,font=\scriptsize] {-68};
+    \addplot[only marks,mark=square*,blue!40,opacity=.7,mark size=0.42cm] coordinates{(8,8)};
+    \node at (axis cs:8,8) [above,font=\scriptsize] {-365};
+    \addplot[only marks,mark=square*,blue!44,opacity=.7,mark size=0.42cm] coordinates{(8,9)};
+    \node at (axis cs:8,9) [above,font=\scriptsize] {-474};
+    \addplot[only marks,mark=square*,blue!46,opacity=.7,mark size=0.42cm] coordinates{(8,10)};
+    \node at (axis cs:8,10) [above,font=\scriptsize] {-547};
+    \addplot[only marks,mark=square*,green!55,opacity=.7,mark size=0.42cm] coordinates{(9,1)};
+    \node at (axis cs:9,1) [above,font=\scriptsize] {328};
+    \addplot[only marks,mark=square*,green!53,opacity=.7,mark size=0.42cm] coordinates{(9,2)};
+    \node at (axis cs:9,2) [above,font=\scriptsize] {306};
+    \addplot[only marks,mark=square*,green!70,opacity=.7,mark size=0.42cm] coordinates{(9,3)};
+    \node at (axis cs:9,3) [above,font=\scriptsize] {527};
+    \addplot[only marks,mark=square*,green!65,opacity=.7,mark size=0.42cm] coordinates{(9,4)};
+    \node at (axis cs:9,4) [above,font=\scriptsize] {463};
+    \addplot[only marks,mark=square*,green!82,opacity=.7,mark size=0.42cm] coordinates{(9,5)};
+    \node at (axis cs:9,5) [above,font=\scriptsize] {687};
+    \addplot[only marks,mark=square*,green!81,opacity=.7,mark size=0.42cm] coordinates{(9,6)};
+    \node at (axis cs:9,6) [above,font=\scriptsize] {674};
+    \addplot[only marks,mark=square*,green!45,opacity=.7,mark size=0.42cm] coordinates{(9,7)};
+    \node at (axis cs:9,7) [above,font=\scriptsize] {201};
+    \addplot[only marks,mark=square*,blue!30,opacity=.7,mark size=0.42cm] coordinates{(9,8)};
+    \node at (axis cs:9,8) [above,font=\scriptsize] {-28};
+    \addplot[only marks,mark=square*,blue!32,opacity=.7,mark size=0.42cm] coordinates{(9,9)};
+    \node at (axis cs:9,9) [above,font=\scriptsize] {-89};
+    \addplot[only marks,mark=square*,blue!30,opacity=.7,mark size=0.42cm] coordinates{(9,10)};
+    \node at (axis cs:9,10) [above,font=\scriptsize] {-10};
+    \addplot[only marks,mark=square*,green!56,opacity=.7,mark size=0.42cm] coordinates{(10,1)};
+    \node at (axis cs:10,1) [above,font=\scriptsize] {352};
+    \addplot[only marks,mark=square*,green!50,opacity=.7,mark size=0.42cm] coordinates{(10,2)};
+    \node at (axis cs:10,2) [above,font=\scriptsize] {265};
+    \addplot[only marks,mark=square*,green!71,opacity=.7,mark size=0.42cm] coordinates{(10,3)};
+    \node at (axis cs:10,3) [above,font=\scriptsize] {545};
+    \addplot[only marks,mark=square*,green!78,opacity=.7,mark size=0.42cm] coordinates{(10,4)};
+    \node at (axis cs:10,4) [above,font=\scriptsize] {639};
+    \addplot[only marks,mark=square*,green!99,opacity=.7,mark size=0.42cm] coordinates{(10,5)};
+    \node at (axis cs:10,5) [above,font=\scriptsize] {912};
+    \addplot[only marks,mark=square*,green!100,opacity=.7,mark size=0.42cm] coordinates{(10,6)};
+    \node at (axis cs:10,6) [above,font=\scriptsize] {917};
+    \addplot[only marks,mark=square*,green!55,opacity=.7,mark size=0.42cm] coordinates{(10,7)};
+    \node at (axis cs:10,7) [above,font=\scriptsize] {331};
+    \addplot[only marks,mark=square*,green!40,opacity=.7,mark size=0.42cm] coordinates{(10,8)};
+    \node at (axis cs:10,8) [above,font=\scriptsize] {132};
+    \addplot[only marks,mark=square*,green!35,opacity=.7,mark size=0.42cm] coordinates{(10,9)};
+    \node at (axis cs:10,9) [above,font=\scriptsize] {71};
+    \addplot[only marks,mark=square*,green!63,opacity=.7,mark size=0.42cm] coordinates{(10,10)};
+    \node at (axis cs:10,10) [above,font=\scriptsize] {435};
+	\end{axis}
+\end{tikzpicture}
+\end{document}

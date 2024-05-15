@@ -51,8 +51,8 @@ MODELTYPE = 10 # select model type:
   # 14=Chaovalitwongse, Pardalos, Prokopyev (2004) for sources&receivers
   # 15=Rodrigues et al. (2014) 
 
-HEURISTIC = 100 # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC = 10 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
-TIMELIMIT = 36000 # time limit in seconds
+TIMELIMIT = 360 # time limit in seconds

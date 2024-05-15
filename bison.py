@@ -13,7 +13,7 @@ from math import *
 from datetime import datetime
 
 import matplotlib
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pltf
 import numpy as np
 
 import cplex
@@ -910,9 +910,9 @@ if __name__ == '__main__':
 						#print ("new:",fixed_sources)
 						break
 
-					#print ("(do it again)")
+					print ("(do it again)")
 
-				#print ("fixing sources at:",fixed_sources)
+				print ("fixing sources at:",fixed_sources)
 
 				old_obj = -1
 
@@ -939,7 +939,7 @@ if __name__ == '__main__':
 
 					model.solve()
 
-					#print ("Solution value (ocean coverage percentage) = ", model.solution.get_objective_value())
+					print ("Solution value (ocean coverage percentage) = ", model.solution.get_objective_value())
 
 					fixed_receivers = {}
 					for (rx,ry) in ocean:
@@ -967,7 +967,7 @@ if __name__ == '__main__':
 					model.solve()
 
 					obj = model.solution.get_objective_value()
-					#print ("Solution value (ocean coverage percentage) = ", obj)
+					print ("Solution value (ocean coverage percentage) = ", obj)
 
 					fixed_sources = {}
 					for (sx,sy) in ocean:
