@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 
-# running python3.7.3 and cplex12.10.0.2
-
+# running python3.10 and cplex 22.1.1
 import sys
 import re
 import time
@@ -18,41 +17,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import cplex
-from cplex.callbacks import IncumbentCallback
-from cplex.callbacks import LazyConstraintCallback
-from cplex.callbacks import UserCutCallback
 from cplex.exceptions import CplexSolverError
 
-# class for loggin the screen output also into file
-
-class Logger(object):
-		def __init__(self):
-				self.terminal = sys.stdout
-				self.log = open(outdir + "/" + "bison.log", "w+")
-
-		def write(self, message):
-				self.terminal.write(message)
-				self.log.write(message)
-
-		def flush(self):
-				#this flush method is needed for cplex compatibility.
-				#this handles the flush command by doing nothing.
-				pass
-
-
-# class for nice terminal output
-
-class color:
-	PURPLE = '\033[95m'
-	CYAN = '\033[96m'
-	DARKCYAN = '\033[36m'
-	BLUE = '\033[94m'
-	GREEN = '\033[92m'
-	YELLOW = '\033[93m'
-	RED = '\033[91m'
-	BOLD = '\033[1m'
-	UNDERLINE = '\033[4m'
-	END = '\033[0m'
+from src.output_func import *
+from src.classes import *
 
 # Euclidean distance between two points
 def d(x0,y0,x1,y1):
@@ -135,267 +103,6 @@ def check_line(x0,y0,x1,y1):
 			y0 = y0 + sy
 
 # ---------------------------------------------------
-# --- Lazy Cut Callback (for Rodrigues et al., 2014)
-# ---------------------------------------------------
-
-class LazyCallback(LazyConstraintCallback):
-
-	def __call__(self):
-		self.number_of_calls += 1
-
-		# get incumbent solution values
-
-		value_of_s = {}
-		value_of_r = {}
-
-		for gx,gy in ocean:
-			value_of_s[gx,gy] = self.get_values(s[gx,gy])
-			value_of_r[gx,gy] = self.get_values(r[gx,gy])
-
-		if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-			value_of_c = {}
-			for tx,ty in ocean:
-				value_of_c[tx,ty] = self.get_values(c[tx,ty])
-
-		# sorting
-
-		sort_me = []
-
-		for gx,gy in ocean:
-			sort_me.append((gx,gy,'s',value_of_s[gx,gy]))
-			sort_me.append((gx,gy,'r',value_of_r[gx,gy]))
-
-		sort_me = sorted(sort_me, key=lambda sort_me: sort_me[3], reverse=True)
-		n = len(sort_me)
-
-		# compute permutation
-
-		pi = [(0,0,0,0)]
-
-		for i in range(1,n+1):
-			pi.append((sort_me[i-1][0],sort_me[i-1][1],sort_me[i-1][2]))
-
-		for tx,ty in ocean:
-			# compute cut strength
-
-			lhs = 0
-
-			for i in range(2,n+1):
-				var_i = pi[i][2]
-				pi_i_x = pi[i][0]
-				pi_i_y = pi[i][1]
-
-				for j in range(1,i):
-					var_j = pi[j][2]
-					pi_j_x = pi[j][0]
-					pi_j_y = pi[j][1]
-
-					if var_i == 's' and var_j == 'r':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							lhs = lhs + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y] * value_of_s[pi_i_x,pi_i_y]
-
-					if var_i == 'r' and var_j == 's':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							lhs = lhs + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y] * value_of_r[pi_i_x,pi_i_y]
-
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					if lhs <= log(1-instance.dp): # no cut found
-						continue
-				else: # goal: deploy equipment
-					if lhs <= value_of_c[tx,ty] * log(1-instance.dp): # no cut found
-						continue
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					if lhs >= 1.0: # no cut found
-						continue
-				else: # goal: deploy equipment
-					if lhs >= value_of_c[tx,ty]: # no cut found
-						continue
-
-			# generate cut
-
-			thevars = []
-			thecoefs = []
-
-			if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-				thevars.append(c[tx,ty])
-				if instance.CC == 0: # probabilistic model
-					thecoefs.append(-log(1-instance.dp))
-				else: # cookie-cutter model
-					thecoefs.append(-1.0)
-
-			for i in range(2,n+1):
-				coef = 0
-				var_i = pi[i][2]
-				pi_i_x = pi[i][0]
-				pi_i_y = pi[i][1]
-
-				for j in range(1,i):
-					var_j = pi[j][2]
-					pi_j_x = pi[j][0]
-					pi_j_y = pi[j][1]
-
-					if var_i == 's' and var_j == 'r':
-						if (tx,ty,theta,pi_i_x,pi_i_y,pi_j_x,pi_j_y) in detection_prob:
-							coef = coef + detection_prob[tx,ty,theta,pi_i_x,pi_i_y,pi_j_x,pi_j_y]
-
-					if var_i == 'r' and var_j == 's':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							coef = coef + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y]
-
-				if var_i == 's':
-					thevars.append(s[pi_i_x,pi_i_y])
-				if var_i == 'r':
-					thevars.append(r[pi_i_x,pi_i_y])
-
-				thecoefs.append(coef);
-
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					self.add(constraint = cplex.SparsePair(thevars,thecoefs), sense = "L", rhs = log(1-instance.dp))
-				else: # goal: deploy equipment
-					self.add(constraint = cplex.SparsePair(thevars,thecoefs), sense = "L", rhs = 0.0)
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					self.add(constraint = cplex.SparsePair(thevars,thecoefs), sense = "G", rhs = 1.0)
-				else: # goal: deploy equipment
-					self.add(constraint = cplex.SparsePair(thevars,thecoefs), sense = "G", rhs = 0.0)
-
-			self.number_of_cuts_added += 1
-
-# ---------------------------------------------------
-# --- User Cut Callback (for Rodrigues et al., 2014)
-# ---------------------------------------------------
-
-class UsercutCallback(UserCutCallback):
-
-	def __call__(self):
-		self.number_of_calls += 1
-
-		# get incumbent solution values
-
-		value_of_s = {}
-		value_of_r = {}
-
-		for gx,gy in ocean:
-			value_of_s[gx,gy] = self.get_values(s[gx,gy])
-			value_of_r[gx,gy] = self.get_values(r[gx,gy])
-
-		if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-			value_of_c = {}
-			for tx,ty in ocean:
-				value_of_c[tx,ty] = self.get_values(c[tx,ty])
-
-		# sorting
-
-		sort_me = []
-
-		for gx,gy in ocean:
-			sort_me.append((gx,gy,'s',value_of_s[gx,gy]))
-			sort_me.append((gx,gy,'r',value_of_r[gx,gy]))
-
-		sort_me = sorted(sort_me, key=lambda sort_me: sort_me[3], reverse=True)
-		n = len(sort_me)
-
-		# compute permutation
-
-		pi = [(0,0,0,0)]
-
-		for i in range(1,n+1):
-			pi.append((sort_me[i-1][0],sort_me[i-1][1],sort_me[i-1][2]))
-
-		for tx,ty in ocean:
-			# compute cut strength
-
-			lhs = 0
-
-			for i in range(2,n+1):
-				var_i = pi[i][2]
-				pi_i_x = pi[i][0]
-				pi_i_y = pi[i][1]
-
-				for j in range(1,i):
-					var_j = pi[j][2]
-					pi_j_x = pi[j][0]
-					pi_j_y = pi[j][1]
-
-					if var_i == 's' and var_j == 'r':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							lhs = lhs + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y] * value_of_s[pi_i_x,pi_i_y]
-
-					if var_i == 'r' and var_j == 's':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							lhs = lhs + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y] * value_of_r[pi_i_x,pi_i_y]
-
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					if lhs <= log(1-instance.dp) + instance.USERCUTSTRENGTH: # no cut found
-						continue
-				else: # goal: deploy equipment
-					if lhs <= value_of_c[tx,ty] * log(1-instance.dp) + instance.USERCUTSTRENGTH: # no cut found
-						continue
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					if lhs >= 1.0 - instance.USERCUTSTRENGTH: # no cut found
-						continue
-				else: # goal: deploy equipment
-					if lhs >= value_of_c[tx,ty] - instance.USERCUTSTRENGTH: # no cut found
-						continue
-
-			# generate cut
-
-			thevars = []
-			thecoefs = []
-
-			if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-				thevars.append(c[tx,ty])
-				if instance.CC == 0: # probabilistic model
-					thecoefs.append(-log(1-instance.dp))
-				else: # cookie-cutter model
-					thecoefs.append(-1.0)
-
-			for i in range(2,n+1):
-				coef = 0
-				var_i = pi[i][2]
-				pi_i_x = pi[i][0]
-				pi_i_y = pi[i][1]
-
-				for j in range(1,i):
-					var_j = pi[j][2]
-					pi_j_x = pi[j][0]
-					pi_j_y = pi[j][1]
-
-					if var_i == 's' and var_j == 'r':
-						if (tx,ty,theta,pi_i_x,pi_i_y,pi_j_x,pi_j_y) in detection_prob:
-							coef = coef + detection_prob[tx,ty,theta,pi_i_x,pi_i_y,pi_j_x,pi_j_y]
-
-					if var_i == 'r' and var_j == 's':
-						if (tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y) in detection_prob:
-							coef = coef + detection_prob[tx,ty,theta,pi_j_x,pi_j_y,pi_i_x,pi_i_y]
-
-				if var_i == 's':
-					thevars.append(s[pi_i_x,pi_i_y])
-				if var_i == 'r':
-					thevars.append(r[pi_i_x,pi_i_y])
-
-				thecoefs.append(coef);
-
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					self.add(cut = cplex.SparsePair(thevars,thecoefs), sense = "L", rhs = log(1-instance.dp))
-				else: # goal: deploy equipment
-					self.add(cut = cplex.SparsePair(thevars,thecoefs), sense = "L", rhs = 0.0)
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					self.add(cut = cplex.SparsePair(thevars,thecoefs), sense = "G", rhs = 1.0)
-				else: # goal: deploy equipment
-					self.add(cut = cplex.SparsePair(thevars,thecoefs), sense = "G", rhs = 0.0)
-
-			self.number_of_cuts_added += 1
-
-
-# ---------------------------------------------------
 # --- let's start
 # ---------------------------------------------------
 
@@ -407,10 +114,11 @@ if __name__ == '__main__':
 
 	timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 	outdir = instance.DIR + timestamp + '_' + instance.OUTPUT
+
 	os.mkdir(outdir)
 	shutil.copy2("./cfg/" + instance.OUTPUT + ".py", outdir)
 
-	sys.stdout = Logger() # redirect output to screen and logfile
+	sys.stdout = Logger(outdir) # redirect output to screen and logfile
 
 
 	print ("BISON - "+color.BOLD+"BI"+color.END+"static "+color.BOLD+"S"+color.END+"onar "+color.BOLD+"O"+color.END+"ptimizatio"+color.BOLD+"N"+color.END)
@@ -525,59 +233,16 @@ if __name__ == '__main__':
 	# --- create latex output of map
 	# ---------------------------------------------------
 
-	paperwidth = instance.X + 5
-	paperheight = instance.Y + 5
-
-	file = open(outdir+"/oceanmap.tex","w+")
-
-	file.write("\\documentclass[12pt]{article}\n")
-	file.write("\\usepackage{tikz}\n")
-	file.write("\\usepackage{pgfplots}\n")
-	file.write("\\usepackage[paperwidth="+str(paperwidth)+"cm, paperheight="+str(paperheight)+"cm, margin=1cm]{geometry}\n")
-	file.write("\\begin{document}\n")
-	file.write("\\begin{tikzpicture}\n")
-	file.write("	\\begin{axis}[\n")
-	file.write("	xtick={1,...,"+str(instance.X)+"},\n")
-	file.write("	ytick={1,...,"+str(instance.Y)+"},\n")
-	file.write("	width="+str(instance.X+1)+"cm,\n")
-	file.write("	height="+str(instance.Y+1)+"cm,\n")
-	file.write("	xmin=0.5,\n")
-	file.write("	xmax="+str(instance.X+0.5)+",\n")
-	file.write("	ymin=0.5,\n")
-	file.write("	ymax="+str(instance.Y+0.5)+",\n")
-	file.write("	xlabel={$x$},\n")
-	file.write("	ylabel={$y$},\n")
-	file.write("	grid=major,\n")
-	file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
-
-	for i in range(1,instance.X+1):
-
-		for j in range(1,instance.Y+1):
-
-			if map[i][j] < 0.0:
-				val = int(30 + 70 * map[i][j] / minval)
-				file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
-
-			else:
-				val = int(30 + 70 * map[i][j] / maxval)
-				file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
-
-	file.write("	\\end{axis}\n")
-	file.write("\\end{tikzpicture}\n")
-	file.write("\\end{document}\n")
-
-	file.close()
+	create_latex_map(instance, map, minval, maxval, outdir)
 
 	# ---------------------------------------------------
 	# --- output ocean pixels
 	# ---------------------------------------------------
 
-	file = open(outdir+"/ocean.dat","w+")
+	file = open(outdir + "/ocean.dat","w+")
 
 	for i,j in ocean:
-		file.write(str(i)+" "+str(j)+"\n")
+		file.write(str(i) + " " + str(j)+"\n")
 
 	file.close()
 
@@ -587,7 +252,7 @@ if __name__ == '__main__':
 	# --- output map
 	# ---------------------------------------------------
 
-	file = open(outdir+"/map.dat","w+")
+	file = open(outdir + "/map.dat","w+")
 
 	for i in range(1,instance.X+1):
 		for j in range(1,instance.Y+1):
@@ -780,7 +445,7 @@ if __name__ == '__main__':
 
 	model = cplex.Cplex()
 
-	print ("IBM ILOG CPLEX version number: ",model.get_version())
+	print ("IBM ILOG CPLEX version number: ", model.get_version())
 
 	# VARIABLES
 
@@ -1096,7 +761,7 @@ if __name__ == '__main__':
 				#print ("Solution value = ",obj)
 
 				fixed_sources = {}
-				
+
 				for (sx,sy) in ocean:
 					if model.solution.get_values(s[sx,sy]) > 0.999:
 						#print ("got one source at ",sx,sy)
@@ -1366,7 +1031,7 @@ if __name__ == '__main__':
 
 	# write model
 
-	model.write(outdir+"/bison.lp")
+	model.write(outdir + "/bison.lp")
 
 	# solve model
 
@@ -1490,7 +1155,7 @@ if __name__ == '__main__':
 	# --- output solution to files
 	# ---------------------------------------------------
 
-	file = open(outdir+"/solution-r.csv","w+")
+	file = open(outdir + "/solution-r.csv","w+")
 
 	file.write("rx ry\n")
 
@@ -1527,86 +1192,7 @@ if __name__ == '__main__':
 	# --- output solution as latex
 	# ---------------------------------------------------
 
-	def write_latex_solution(outdir, instance, ocean, map, minval, maxval, cov_val, solution):
-
-		paperwidth = instance.X+5
-		paperheight = instance.Y+5
-
-		file = open(outdir+"/solution.tex","w+")
-
-		file.write("\\documentclass[12pt]{article}\n")
-		file.write("\\usepackage{tikz}\n")
-		file.write("\\usepackage{pgfplots}\n")
-		file.write("\\usepackage[paperwidth="+str(paperwidth)+"cm, paperheight="+str(paperheight)+"cm, margin=1cm]{geometry}\n")
-		file.write("\\begin{document}\n")
-		file.write("\\begin{tikzpicture}\n")
-		file.write("	\\begin{axis}[\n")
-		file.write("	xtick={1,...,"+str(instance.X)+"},\n")
-		file.write("	ytick={1,...,"+str(instance.Y)+"},\n")
-		file.write("	width="+str(instance.X+1)+"cm,\n")
-		file.write("	height="+str(instance.Y+1)+"cm,\n")
-		file.write("	xmin=0.5,\n")
-		file.write("	xmax="+str(instance.X+0.5)+",\n")
-		file.write("	ymin=0.5,\n")
-		file.write("	ymax="+str(instance.Y+0.5)+",\n")
-		file.write("	xlabel={$x$},\n")
-		file.write("	ylabel={$y$},\n")
-		file.write("	grid=major,\n")
-		file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
-
-		for i in range(1,instance.X+1):
-			for j in range(1,instance.Y+1):
-				if map[i][j] < 0.0:
-					val = int(30 + 70 * map[i][j] / minval)
-					file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-					file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
-				else:
-					val = int(30 + 70 * map[i][j] / maxval)
-					file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-					file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
-
-		if instance.GOAL == 1: # goal: maximize coverage
-			for tx,ty in ocean:
-				if instance.CC == 1: # cookie-cutter model
-					if solution.get_values(c[tx,ty]) > 0.999:
-						val = str(cov_val[tx,ty])
-					else:
-						val = "X"
-				else: # probabilistic model
-					if solution.get_values(c[tx,ty]) > 0.999:
-						val = str(int(100*(1-exp(cov_val[tx,ty]))))
-					else:
-						val = "X("+str(int(100*(1-exp(cov_val[tx,ty]))))+")"
-
-				file.write("    \\node at (axis cs:"+str(tx)+","+str(ty)+") [below,font=\\scriptsize] {"+val+"};\n")
-
-		else: # goal: minimize cost for deployed equipment
-			for tx,ty in ocean:
-				if instance.CC == 1: # cookie-cutter model
-					val = str(cov_val[tx,ty])
-				else: # probabilistic model
-					val = str(int(100*(1-exp(cov_val[tx,ty]))))
-
-				file.write("    \\node at (axis cs:"+str(tx)+","+str(ty)+") [below,font=\\scriptsize] {"+val+"};\n")
-
-		file.write("    \\addplot[only marks,mark=*,red,mark size=0.20cm] table\n")
-		file.write("         [\n")
-		file.write("           x expr=\\thisrow{sx},\n")
-		file.write("           y expr=\\thisrow{sy}\n")
-		file.write("         ] {solution-s.csv};\n")
-		file.write("    \\addplot[only marks,mark=triangle*,blue,mark size=0.20cm] table\n")
-		file.write("         [\n")
-		file.write("           x expr=\\thisrow{rx},\n")
-		file.write("           y expr=\\thisrow{ry}\n")
-		file.write("         ] {solution-r.csv};\n")
-
-		file.write("	\\end{axis}\n")
-		file.write("\\end{tikzpicture}\n")
-		file.write("\\end{document}\n")
-
-		file.close()
-
-	write_latex_solution(outdir, instance, ocean, map, minval, maxval, cov_val, solution)
+	write_latex_solution(outdir, instance, ocean, map, minval, maxval, cov_val, c, solution)
 
 	# ---------------------------------------------------
 	# --- farewell
