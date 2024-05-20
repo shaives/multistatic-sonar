@@ -115,12 +115,12 @@ if __name__ == '__main__':
 	longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
 	data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
 
-	if (nrows == 0 or ncols == 0):
+	elevation_data = re.split("\n+", elevation_data)[6:-1]
+
+	if (nrows != len(elevation_data) or ncols != len(elevation_data[0])):
 
 		print ("something wrong here")
 		quit()
-
-	elevation_data = re.split("\n+", elevation_data)[6:-1]
 
 	elevation_data_matrix = []
 
