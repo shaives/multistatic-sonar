@@ -381,19 +381,18 @@ if __name__ == '__main__':
 			c[tx,ty] = "c#"+str(tx)+"#"+str(ty)
 			model.variables.add(obj = [percentage], names = [c[tx,ty]], lb = [0], ub = [1], types = ["B"])
 
-	if instance.MODELTYPE in {4,5,7,8,10,11,13,14}:
-		y = {}
+	y = {}
 
-		for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
-			y[tx,ty,theta,gx,gy] = "y#"+str(tx)+"#"+str(ty)+"#"+str(theta)+"#"+str(gx)+"#"+str(gy)
+	for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
+		y[tx,ty,theta,gx,gy] = "y#"+str(tx)+"#"+str(ty)+"#"+str(theta)+"#"+str(gx)+"#"+str(gy)
 
-			if instance.CC == 0: # probabilistic model
-				model.variables.add(names = [y[tx,ty,theta,gx,gy]], lb = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], ub = [0], types = ["C"])
-			else: # cookie-cutter model
-				model.variables.add(names = [y[tx,ty,theta,gx,gy]], ub = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], lb = [0], types = ["C"])
+		if instance.CC == 0: # probabilistic model
+			model.variables.add(names = [y[tx,ty,theta,gx,gy]], lb = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], ub = [0], types = ["C"])
+		else: # cookie-cutter model
+			model.variables.add(names = [y[tx,ty,theta,gx,gy]], ub = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], lb = [0], types = ["C"])
 
-				# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
-				#model.variables.add(names = [y[tx,ty,theta,gx,gy]], ub = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], lb = [0], types = ["I"])
+			# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
+			#model.variables.add(names = [y[tx,ty,theta,gx,gy]], ub = [detection_prob_rowsum_s[tx,ty,theta,gx,gy]], lb = [0], types = ["I"])
 
 	# CONSTRAINTS
 
@@ -441,169 +440,61 @@ if __name__ == '__main__':
 
 		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
 
-	if instance.MODELTYPE == 7:
-		# 1st linearization from Oral, Kettani (1992) for senders
+	# 2nd linearization from Oral, Kettani (1992) for sources
 
-		# coverage for each ocean pixel
+	# coverage for each ocean pixel
 
-		for tx,ty in ocean:
-			for theta in range(0,180,instance.STEPS): # target angle
-				thevars = []
-				thecoefs = []
+	for tx,ty in ocean:
+		for theta in range(0,180,instance.STEPS): # target angle
+			thevars = []
+			thecoefs = []
 
+			for gx,gy in ocean:
+				thevars.append(y[tx,ty,theta,gx,gy])
+				thecoefs.append(-1.0)
+
+			for g1x,g1y in ocean:
+				sum = 0
 				for gx,gy in ocean:
-					thevars.append(s[gx,gy])
-					thevars.append(y[tx,ty,theta,gx,gy])
-					thecoefs.append(detection_prob_rowsum_s[tx,ty,theta,gx,gy])
+					if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
+						sum = sum + detection_prob[tx,ty,theta,gx,gy,g1x,g1y]
+
+				thevars.append(r[g1x,g1y])
+				thecoefs.append(sum)
+
+			if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
+				thevars.append(c[tx,ty])
+				if instance.CC == 0: # probabilistic model
+					thecoefs.append(-log(1-instance.dp))
+				else: # cookie-cutter model
 					thecoefs.append(-1.0)
 
-				if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-					thevars.append(c[tx,ty])
-					if instance.CC == 0: # probabilistic model
-						thecoefs.append(-log(1-instance.dp))
-					else: # cookie-cutter model
-						thecoefs.append(-1.0)
-
-				if instance.CC == 0: # probabilistic model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-				else: # cookie-cutter model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
-
-		# linearization constraints
-
-		for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
-			thevars = [y[tx,ty,theta,gx,gy],s[gx,gy]]
-			thecoefs = [1.0,-detection_prob_rowsum_s[tx,ty,theta,gx,gy]]
-
-			for g1x,g1y in ocean:
-				if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
-					thevars.append(r[g1x,g1y])
-					thecoefs.append(detection_prob[tx,ty,theta,gx,gy,g1x,g1y])
-
 			if instance.CC == 0: # probabilistic model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
+				if instance.GOAL == 0: # goal: cover all pixels
+					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
+				else: # goal: deploy equipment
+					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
 			else: # cookie-cutter model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
+				if instance.GOAL == 0: # goal: cover all pixels
+					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
+				else: # goal: deploy equipment
+					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
 
-	if instance.MODELTYPE == 10:
-		# 2nd linearization from Oral, Kettani (1992) for sources
+	# linearization constraints
 
-		# coverage for each ocean pixel
+	for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
+		thevars = [y[tx,ty,theta,gx,gy],s[gx,gy]]
+		thecoefs = [-1.0,-detection_prob_rowsum_s[tx,ty,theta,gx,gy]]
 
-		for tx,ty in ocean:
-			for theta in range(0,180,instance.STEPS): # target angle
-				thevars = []
-				thecoefs = []
+		for g1x,g1y in ocean:
+			if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
+				thevars.append(r[g1x,g1y])
+				thecoefs.append(detection_prob[tx,ty,theta,gx,gy,g1x,g1y])
 
-				for gx,gy in ocean:
-					thevars.append(y[tx,ty,theta,gx,gy])
-					thecoefs.append(-1.0)
-
-				for g1x,g1y in ocean:
-					sum = 0
-					for gx,gy in ocean:
-						if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
-							sum = sum + detection_prob[tx,ty,theta,gx,gy,g1x,g1y]
-
-					thevars.append(r[g1x,g1y])
-					thecoefs.append(sum)
-
-				if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-					thevars.append(c[tx,ty])
-					if instance.CC == 0: # probabilistic model
-						thecoefs.append(-log(1-instance.dp))
-					else: # cookie-cutter model
-						thecoefs.append(-1.0)
-
-				if instance.CC == 0: # probabilistic model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-				else: # cookie-cutter model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
-
-		# linearization constraints
-
-		for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
-			thevars = [y[tx,ty,theta,gx,gy],s[gx,gy]]
-			thecoefs = [-1.0,-detection_prob_rowsum_s[tx,ty,theta,gx,gy]]
-
-			for g1x,g1y in ocean:
-				if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
-					thevars.append(r[g1x,g1y])
-					thecoefs.append(detection_prob[tx,ty,theta,gx,gy,g1x,g1y])
-
-			if instance.CC == 0: # probabilistic model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
-			else: # cookie-cutter model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-
-	if instance.MODELTYPE == 13:
-		# linearization from Chaovalitwongse, Pardalos, Prokopyev (2004) for sources
-
-		# coverage for each ocean pixel
-
-		for tx,ty in ocean:
-			for theta in range(0,180,instance.STEPS): # target angle
-				thevars = []
-				thecoefs = []
-
-				for gx,gy in ocean:
-					thevars.append(y[tx,ty,theta,gx,gy])
-					thecoefs.append(1.0)
-
-				if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-					thevars.append(c[tx,ty])
-					if instance.CC == 0: # probabilistic model
-						thecoefs.append(-log(1-instance.dp))
-					else: # cookie-cutter model
-						thecoefs.append(-1.0)
-
-				if instance.CC == 0: # probabilistic model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-				else: # cookie-cutter model
-					if instance.GOAL == 0: # goal: cover all pixels
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
-					else: # goal: deploy equipment
-						model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
-
-		# linearization constraints
-
-		for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
-			thevars = [y[tx,ty,theta,gx,gy],s[gx,gy]]
-			thecoefs = [-1.0,detection_prob_rowsum_s[tx,ty,theta,gx,gy]]
-
-			if instance.CC == 0: # probabilistic model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-			else: # cookie-cutter model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
-
-		for tx,ty,theta,gx,gy in detection_prob_rowsum_s:
-			thevars = [y[tx,ty,theta,gx,gy]]
-			thecoefs = [-1.0]
-
-			for g1x,g1y in ocean:
-				if (tx,ty,theta,gx,gy,g1x,g1y) in detection_prob:
-					thevars.append(r[g1x,g1y])
-					thecoefs.append(detection_prob[tx,ty,theta,gx,gy,g1x,g1y])
-
-			if instance.CC == 0: # probabilistic model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-			else: # cookie-cutter model
-				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
+		if instance.CC == 0: # probabilistic model
+			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])
+		else: # cookie-cutter model
+			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
 
 	if instance.USERCUTS == 1:
 		usercut_cb = model.register_callback(UsercutCallback)
