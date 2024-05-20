@@ -99,74 +99,14 @@ if __name__ == '__main__':
 	# --- read ocean elevation data file
 	# ---------------------------------------------------
 
-	print ("reading '" + instance.DIR + instance.INPUT + "'")
-
-	file = open(instance.DIR + "/" + instance.INPUT, "r")
-	elevation_data = file.read()
-	file.close()
-
-	ncols = int(re.search("ncols (.*)", elevation_data).group(1))
-	print ("number of columns:",ncols)
-
-	nrows = int(re.search("nrows (.*)", elevation_data).group(1))
-	print ("number of rows:", nrows)
-
-	latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
-	longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
-	data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
-
-	elevation_data = re.split("\n+", elevation_data)[6:-1]
-
-	if (nrows != len(elevation_data) or ncols != len(elevation_data[0])):
-
-		print ("something wrong here")
-		quit()
-
-	elevation_data_matrix = []
-
-	for line in elevation_data[(nrows - 100 - instance.Y):nrows - 100]:
-		
-		line_data = [float(item) for item in re.split("\s+", line)[:instance.X]]
-		elevation_data_matrix.append(line_data)
-
-	# ---------------------------------------------------
-	# --- aggregate data
-	# ---------------------------------------------------
-
-	minval = 0
-	maxval = 0
-
-	map = {}
-	ocean = {}
-
-	for i in range(0, instance.X):
-
-		map[i] = {}
-
-		for j in range(0, instance.Y):
-
-			map[i][j] = elevation_data_matrix[i][j]
-
-
-			if map[i][j] < 0.0:
-
-				ocean[i,j] = 1
-
-			if map[i][j] < minval:
-
-				minval = map[i][j]
-
-			if map[i][j] > maxval:
-
-				maxval = map[i][j]
-
+	map, ocean, min_depth, max_depth = reading_in_ocean_data(instance)
 
 	# ---------------------------------------------------
 	# --- create outputs
 	# ---------------------------------------------------
 
 	# output latex map
-	create_latex_map(instance, map, minval, maxval, outdir)
+	create_latex_map(instance, map, min_depth, max_depth, outdir)
 
 	# output ocean pixels
 	create_ocean_dat(ocean, outdir)
@@ -1023,11 +963,11 @@ if __name__ == '__main__':
 	for i in range(0,instance.X):
 		for j in range(0,instance.Y):
 			if map[i][j] < 0.0:
-				val = int(30 + 70 * map[i][j] / minval)
+				val = int(30 + 70 * map[i][j] / min_depth)
 				file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
 				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
 			else:
-				val = int(30 + 70 * map[i][j] / maxval)
+				val = int(30 + 70 * map[i][j] / max_depth)
 				file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
 				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
 
