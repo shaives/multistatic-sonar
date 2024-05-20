@@ -1,4 +1,5 @@
 import numpy as np
+import re
 
 from math import *
 
@@ -83,3 +84,61 @@ def check_line(x0, y0, x1, y1, map):
 		if e2 < dx:
 			err = err + dx
 			y0 = y0 + sy
+
+def reading_in_ocean_data(instance):
+
+	print ("reading '" + instance.DIR + instance.INPUT + "'")
+
+	file = open(instance.DIR + "/" + instance.INPUT, "r")
+	elevation_data = file.read()
+	file.close()
+
+	ncols = int(re.search("ncols (.*)", elevation_data).group(1))
+	print ("number of columns:",ncols)
+
+	nrows = int(re.search("nrows (.*)", elevation_data).group(1))
+	print ("number of rows:", nrows)
+
+	latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
+	longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
+	data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
+
+	elevation_data = re.split("\n+", elevation_data)[6:-1]
+
+	print(len(elevation_data))
+
+	if (nrows != len(elevation_data)+1):
+
+		print ("Not enough data in file")
+		quit()
+
+	map = {}
+	ocean = {}
+	min_depth = -11022.0
+	max_depth = 0.0
+
+	for i, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
+
+		line_dict = {}
+		
+		for j, element in enumerate(re.split("\s+", line_str)[:instance.X]):
+
+			# if needed, here has to be the code for avg of depths
+
+			if float(element) < 0:
+
+				ocean[i,j] = 1
+
+				if float(element) > min_depth and float(element) < 0:
+
+					min_depth = float(element)
+
+				if float(element) < max_depth:
+
+					max_depth = float(element)
+
+				line_dict[j] = float(element)
+
+		map[i] = line_dict
+
+	return map, ocean, min_depth, max_depth
