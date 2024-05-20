@@ -27,9 +27,9 @@ def create_latex_map(instance, map, minval, maxval, outdir):
     file.write("	grid=major,\n")
     file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
 
-    for i in range(1,instance.X+1):
+    for i in range(0,instance.X):
 
-        for j in range(1,instance.Y+1):
+        for j in range(0,instance.Y):
 
             if map[i][j] < 0.0:
                 val = int(30 + 70 * map[i][j] / minval)
@@ -44,5 +44,29 @@ def create_latex_map(instance, map, minval, maxval, outdir):
     file.write("	\\end{axis}\n")
     file.write("\\end{tikzpicture}\n")
     file.write("\\end{document}\n")
+
+    file.close()
+
+def create_ocean_dat(ocean, outdir):   
+
+	file = open(outdir + "/ocean.dat", "w+")
+
+	for i,j in ocean:
+
+		file.write(str(i) + " " + str(j)+"\n")
+
+	file.close()
+
+	print ("number of ocean pixels:",len(ocean))
+     
+def create_map_dat(instance, map, outdir):
+
+    file = open(outdir + "/map.dat", "w+")
+
+    for i in range(0,instance.X):
+
+        for j in range(0,instance.Y):
+
+            file.write(str(i) + " " + str(j) + " " + str(map[i][j]) + "\n")
 
     file.close()
