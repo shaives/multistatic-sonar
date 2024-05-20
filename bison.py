@@ -1185,6 +1185,8 @@ if __name__ == '__main__':
 	# --- farewell
 	# ---------------------------------------------------
 
+	print (f"the total time spent is {datetime.now().strftime('%Y-%m-%d_%H-%M-%S')-timestamp} seconds")
+
 	print ("output written to '" + color.RED + outdir + color.END + "'")
 
 	print ("this is the end, my only friend, the end...")
