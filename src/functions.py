@@ -103,8 +103,6 @@ def reading_in_ocean_data(instance):
 
 	elevation_data = re.split("\n+", elevation_data)[6:-1]
 
-	print(len(elevation_data))
-
 	if (nrows != len(elevation_data)+1):
 
 		print ("Not enough data in file")
