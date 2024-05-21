@@ -1,4 +1,9 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 from math import *
+
+from src.functions import *
 
 def create_latex_map(instance, map, minval, maxval, outdir):
 
@@ -70,3 +75,35 @@ def create_map_dat(instance, map, outdir):
             file.write(str(i) + " " + str(j) + " " + str(map[i][j]) + "\n")
 
     file.close()
+
+def create_plot_func_g(instance, outdir):
+
+    if len(instance.TS) > 0:
+
+        # Data for plotting
+        t = np.arange(0.0, 2.0*pi, 0.01)
+        tt = t/180.0*pi
+        s = g_cos(t, instance)
+
+        fig, ax = plt.subplots()
+        ax.plot(t, s)
+
+        ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
+                    title='Target Strength as a Function of Degree')
+        ax.grid()
+
+        fig.savefig(outdir+"/g_cos_theta.png")
+        #plt.show()
+
+        fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+
+        # is this even working?
+        #plt.subplot(111,projection='polar')
+        ax.plot(tt, s)
+        ax.grid()
+        ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
+                    title='Target Strength as a Function of Degree')
+        ax.grid()
+
+        fig.savefig(outdir+"/g_cos_theta_polar.png")
+        #plt.show()
