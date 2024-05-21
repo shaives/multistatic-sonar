@@ -253,5 +253,4 @@ def compute_coverage_triples(instance, map, ocean):
 
 	print (f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
 
-
 	return detection_prob
