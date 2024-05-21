@@ -127,11 +127,11 @@ if __name__ == '__main__':
 	if len(instance.TS) == 0:
 		instance.STEPS = 180
 
-	# ---------------------------------------------------
-	# --- computing the rowsum in detection_prob
-	# ---------------------------------------------------
+	# computing the rowsum in detection_prob
 
 	print ("Computing detection prob")
+
+	# should we maybe go only with one varient???
 
 	start_time_prob = time.time()
 
@@ -207,6 +207,8 @@ if __name__ == '__main__':
 
 	print (f"it took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
+	exit()
+
 	# ---------------------------------------------------
 	# --- set up optimization model
 	# ---------------------------------------------------
@@ -225,11 +227,11 @@ if __name__ == '__main__':
 		r[tx_x,tx_y] = "r#"+str(tx_x)+"#"+str(tx_y)
 
 		if instance.GOAL == 0: # optimization goal: cover all pixels, minimize deployment cost
-			model.variables.add(obj = [instance.S], names = [s[tx_x,tx_y]], lb = [0], ub = [1], tar_ypes = ["B"])
-			model.variables.add(obj = [instance.R], names = [r[tx_x,tx_y]], lb = [0], ub = [1], tar_ypes = ["B"])
+			model.variables.add(obj = [instance.S], names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(obj = [instance.R], names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
 		else: # deploy equipment, maximize coverage
-			model.variables.add(names = [s[tx_x,tx_y]], lb = [0], ub = [1], tar_ypes = ["B"])
-			model.variables.add(names = [r[tx_x,tx_y]], lb = [0], ub = [1], tar_ypes = ["B"])
+			model.variables.add(names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
 
 	if instance.GOAL == 1: # deploy equipment, maximize coverage
 		c = {} # coverage, =1, if some source-receiver pair covers location tar_x,tar_y
@@ -238,7 +240,7 @@ if __name__ == '__main__':
 
 		for tar_x,tar_y in ocean:
 			c[tar_x,tar_y] = "c#"+str(tar_x)+"#"+str(tar_y)
-			model.variables.add(obj = [percentage], names = [c[tar_x,tar_y]], lb = [0], ub = [1], tar_ypes = ["B"])
+			model.variables.add(obj = [percentage], names = [c[tar_x,tar_y]], lb = [0], ub = [1], types = ["B"])
 
 	y = {}
 
@@ -246,12 +248,12 @@ if __name__ == '__main__':
 		y[tar_x,tar_y,theta,tx_x,tx_y] = "y#"+str(tar_x)+"#"+str(tar_y)+"#"+str(theta)+"#"+str(tx_x)+"#"+str(tx_y)
 
 		if instance.CC == 0: # probabilistic model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], lb = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], ub = [0], tar_ypes = ["C"])
+			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], lb = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], ub = [0], types = ["C"])
 		else: # cookie-cutter model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], tar_ypes = ["C"])
+			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["C"])
 
 			# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
-			#model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], tar_ypes = ["I"])
+			#model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["I"])
 
 	# CONSTRAINTS
 
