@@ -123,7 +123,7 @@ if __name__ == '__main__':
 	# compute coverage
 
 	detection_prob = compute_coverage_triples(instance, map, ocean)
-	
+
 	if len(instance.TS) == 0:
 		instance.STEPS = 180
 
@@ -132,6 +132,8 @@ if __name__ == '__main__':
 	# ---------------------------------------------------
 
 	print ("Computing detection prob")
+
+	start_time_prob = time.time()
 
 	detection_prob_rowsum_r = {}
 
@@ -143,9 +145,10 @@ if __name__ == '__main__':
 			for rx_x,rx_y in ocean:
 				sum = 0
 				for tx_x,tx_y in ocean:
-					if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
+					if (tar_x, tar_y, theta, tx_x, tx_y, rx_x, rx_y) in detection_prob:
 						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
-				detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = sum
+
+				detection_prob_rowsum_r[tar_x, tar_y, theta, rx_x, rx_y] = sum
 
 				if sum > max:
 					max = sum
@@ -157,12 +160,14 @@ if __name__ == '__main__':
 			for tar_x,tar_y in ocean:
 				for theta in range(0,180,instance.STEPS): # target angle
 					for rx_x,rx_y in ocean:
+
 						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = min
 
 		else: # cookie-cutter model
 			for tar_x,tar_y in ocean:
 				for theta in range(0,180,instance.STEPS): # target angle
 					for rx_x,rx_y in ocean:
+
 						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = max
 
 
@@ -175,6 +180,7 @@ if __name__ == '__main__':
 				for rx_x,rx_y in ocean:
 					if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
 						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+
 				detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = sum
 
 				if sum > max:
@@ -187,13 +193,19 @@ if __name__ == '__main__':
 			for tar_x,tar_y in ocean:
 				for theta in range(0,180,instance.STEPS): # target angle
 					for tx_x,tx_y in ocean:
+
 						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = min
 
 		else: # cookie-cutter model
 			for tar_x,tar_y in ocean:
 				for theta in range(0,180,instance.STEPS): # target angle
 					for tx_x,tx_y in ocean:
+
 						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = max
+
+	end_time_prob = time.time()
+
+	print (f"it took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
 	# ---------------------------------------------------
 	# --- set up optimization model
