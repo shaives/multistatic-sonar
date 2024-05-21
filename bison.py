@@ -123,9 +123,7 @@ if __name__ == '__main__':
 	# compute coverage
 
 	detection_prob = compute_coverage_triples(instance, map, ocean)
-
-	exit(0)
-
+	
 	if len(instance.TS) == 0:
 		instance.STEPS = 180
 
