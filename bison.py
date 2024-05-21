@@ -117,91 +117,12 @@ if __name__ == '__main__':
 	create_plot_func_g(instance, outdir)
 
 	# ---------------------------------------------------
-	# --- coverage
+	# --- compute model
 	# ---------------------------------------------------
 
-	print ("Computing coverage")
+	# compute coverage
 
-	detection_prob = {}
-
-	start_time_coverage = time.time()
-
-	if len(instance.TS) == 0: # without TS
-
-		for tar_x,tar_y in ocean: # target
-
-			for tx_x,tx_y in ocean: # source
-
-				for rx_x,rx_y in ocean: # receiver
-
-						if instance.CC == 0: # probabilistic model
-
-							if (((d(tx_x, tx_y, tar_x, tar_y) * d(rx_x, rx_y, tar_x, tar_y)) / (instance.rho_0**2) - 1) / instance.b1) < e+10: # avoid numerical trouble from powers of large numbers
-								aux = instance.pmax * (1 / (1 + 10**(((d(tx_x, tx_y, tar_x, tar_y) * d(rx_x, rx_y, tar_x, tar_y)) / (instance.rho_0**2) - 1) / instance.b1))) * (1 / (1 + 10**((1 - (d(tx_x, tx_y, tar_x, tar_y) + d(rx_x, rx_y, tar_x, tar_y)) / (d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb)) / instance.b2)))
-								if aux > instance.pmin:
-									if check_line(tx_x,tx_y,tar_x,tar_y, map) == None and check_line(tar_x,tar_y,rx_x,rx_y, map) == None: # no obstacles between source-target and target-receiver, and source-reiver
-										detection_prob[tar_x,tar_y,0,tx_x,tx_y,rx_x,rx_y] = log(1 - aux) # detection probabilitar_y
-
-						else: # cookie-cutter model
-
-							if d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y) <= instance.rho_0**2 and d(tx_x,tx_y,tar_x,tar_y) + d(rx_x,rx_y,tar_x,tar_y) >= d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
-								if check_line(tx_x,tx_y,tar_x,tar_y, map) == None and check_line(tar_x,tar_y,rx_x,rx_y, map) == None: # no obstacles between source-target, target-receiver, and source-reiver
-									detection_prob[tar_x,tar_y,0,tx_x,tx_y,rx_x,rx_y] = 1 # sure detection
-
-	else: # with TS
-
-		# optimize this first, before working on angle code
-		# for loops in the beginning of the code
-		# first checking for obstacles between source-target and target-receiver
-		# then checking for direct blast effect
-		# then checking for inside range-of-day Cassini oval
-		# only compute the angle we need to compute???
-
-		for tar_x,tar_y in ocean: # target
-
-			for theta in range(0,180,instance.STEPS): # target angle
-				my_theta = theta / 180.0 * pi
-				my_sin_theta = sin(my_theta)
-				my_cos_theta = cos(my_theta)
-
-				for tx_x,tx_y in ocean: # source
-
-					if (tx_x,tx_y) != (tar_x,tar_y): # exclude equalitar_y of source and target (direct blast effect)
-						my_sqrt1 = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2) )
-
-						for rx_x,rx_y in ocean: # receiver
-
-							# (note that there may be obstacles between source-reiver!)
-							if (rx_x,rx_y) != (tar_x,tar_y): # exclude equalitar_y of receiver and target (direct blast effect)
-								my_sqrt2 = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2) )
-
-								if instance.CC == 0: # probabilistic model
-									alpha = ( ((tx_x-tar_x)*my_cos_theta + (tx_y-tar_y)*my_sin_theta ) * my_sqrt1 + ((rx_x-tar_x)*my_cos_theta + (rx_y-tar_y)*my_sin_theta ) * my_sqrt2 )
-
-									if (((d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y)) / ((instance.rho_0 + g(alpha, instance))**2) - 1)/instance.b1) < e+10: # avoid numerical trouble from powers of large numbers
-										aux = instance.pmax * (1 / (1 + 10**(((d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y)) / ((instance.rho_0 + g(alpha, instance))**2) - 1)/instance.b1))) * (1 / (1 + 10**((1 - (d(tx_x,tx_y,tar_x,tar_y) + d(rx_x,rx_y,tar_x,tar_y)) / (d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb))/instance.b2)))
-										
-										if aux > instance.pmin:
-											
-											if check_line(tx_x,tx_y,tar_x,tar_y, map) == None and check_line(tar_x,tar_y,rx_x,rx_y, map) == None: # no obstacles between source-target and target-receiver, and source-reiver
-												detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y] = log(1 - aux) # detection probabilitar_y
-
-								else: # cookie-cutter model
-									
-									if d(tx_x,tx_y,tar_x,tar_y) + d(rx_x,rx_y,tar_x,tar_y) >= d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb: # check for outside direct-blast-effect
-										alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * my_sqrt1 + ((rx_x-tar_x)*my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * my_sqrt2 )
-
-										#print ("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
-
-										if d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
-											
-											if check_line(tx_x, tx_y, tar_x, tar_y, map) == None and check_line(tar_x, tar_y, rx_x, rx_y, map) == None: # no obstacles between source-target, target-receiver
-												detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y] = 1 # sure detection
-												#print ("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
-
-	end_time_coverage = time.time()
-
-	print (f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
+	detection_prob = compute_coverage_triples(instance, map, ocean)
 
 	exit(0)
 
