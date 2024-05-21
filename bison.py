@@ -41,6 +41,7 @@ if __name__ == '__main__':
 		if os.path.isfile(filepath):
 
 			instance = importlib.import_module("cfg." + filename)
+			start_time = datetime.now()
 			timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 
 	except IndexError:
@@ -1016,7 +1017,7 @@ if __name__ == '__main__':
 	# --- farewell
 	# ---------------------------------------------------
 
-	print (f"the total time spent is {datetime.now().strftime('%Y-%m-%d_%H-%M-%S')-timestamp} seconds")
+	print (f"the total time spent is {(datetime.now()-start_time)} seconds")
 
 	print ("output written to '" + color.RED + outdir + color.END + "'")
 
