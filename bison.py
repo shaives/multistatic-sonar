@@ -2,7 +2,6 @@
 
 # running python3.10 and cplex 22.1.1
 import sys
-import re
 import time
 import os
 import shutil
@@ -12,7 +11,6 @@ import random
 from math import *
 from datetime import datetime
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -41,7 +39,7 @@ if __name__ == '__main__':
 		if os.path.isfile(filepath):
 
 			instance = importlib.import_module("cfg." + filename)
-			start_time = datetime.now()
+			start_time = time.time()
 			timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 
 	except IndexError:
@@ -115,41 +113,8 @@ if __name__ == '__main__':
 	# output map
 	create_map_dat(instance, map, outdir)
 
-	# ---------------------------------------------------
-	# --- plot function g
-	# ---------------------------------------------------
-
-	print("Plotting function g")
-
-	if len(instance.TS) > 0:
-
-		# Data for plotting
-		t = np.arange(0.0, 2.0*pi, 0.01)
-		tt = t/180.0*pi
-		s = g_cos(t, instance)
-
-		fig, ax = plt.subplots()
-		ax.plot(t, s)
-
-		ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
-					title='Target Strength as a Function of Degree')
-		ax.grid()
-
-		fig.savefig(outdir+"/g_cos_theta.png")
-		#plt.show()
-
-		fig, ax = plt.subplots(subplot_kw=dict(polar=True))
-
-		# is this even working?
-		#plt.subplot(111,projection='polar')
-		ax.plot(tt, s)
-		ax.grid()
-		ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
-					title='Target Strength as a Function of Degree')
-		ax.grid()
-
-		fig.savefig(outdir+"/g_cos_theta_polar.png")
-		#plt.show()
+	# plot function g
+	create_plot_func_g(instance, outdir)
 
 	# ---------------------------------------------------
 	# --- coverage
@@ -159,7 +124,7 @@ if __name__ == '__main__':
 
 	detection_prob = {}
 
-	start = time.time()
+	start_time_coverage = time.time()
 
 	if len(instance.TS) == 0: # without TS
 		for tx,ty in ocean: # target
@@ -214,9 +179,9 @@ if __name__ == '__main__':
 												detection_prob[tx,ty,theta,gx,gy,g1x,g1y] = 1 # sure detection
 												#print ("target:",tx,ty,"angle:",theta,"source:",gx,gy,"receiver:",g1x,g1y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
-	end = time.time()
+	end_time_coverage = time.time()
 
-	print ("it took","{0:.2f}".format(end - start),"sec to get",len(detection_prob),"detection triples")
+	print (f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
 
 	if len(instance.TS) == 0:
 		instance.STEPS = 180
@@ -814,7 +779,7 @@ if __name__ == '__main__':
 
 	model.parameters.timelimit.set(instance.TIMELIMIT)
 	model.parameters.mip.tolerances.mipgap.set(0.0)
-	model.parameters.workmem.set(instance.RAM)                      # set workmem to 8 GByte
+	model.parameters.workmem.set(instance.RAM)
 	model.parameters.mip.strategy.file.set(2)               # store node file on disk (uncompressed) when workmem is exceeded
 
 	try:
@@ -1017,7 +982,7 @@ if __name__ == '__main__':
 	# --- farewell
 	# ---------------------------------------------------
 
-	print (f"the total time spent is {(datetime.now()-start_time)} seconds")
+	print (f"the total time spent is {(time.time()-start_time):.0f} seconds")
 
 	print ("output written to '" + color.RED + outdir + color.END + "'")
 
