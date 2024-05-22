@@ -3,8 +3,8 @@ INPUT = "GMRTv3_3_20170615topo.asc" # file name of ocean floor data
 
 RAM =2*8192	# 0=use disk, 1=use RAM for storing data
 
-X = 15 # number of pixels in x-direction
-Y = 15 # number of pixels in y-direction
+X = 10 # number of pixels in x-direction
+Y = 10 # number of pixels in y-direction
 
 GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
@@ -27,7 +27,7 @@ TS = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)] # target strength (in pixels),
 
 STEPS = 30 # step size for discretization of half-circle (eg., "10" degrees gives 0,10,20,...,170)
 
-BOUND = 0 # for models 3-14: 0=individual bound per row, 1=min/max over all rows
+BOUND = 1 # 0=individual bound per row, 1=min/max over all rows
 
 USERCUTS = 0 # 0=no user cuts, 1=user cuts on
 
