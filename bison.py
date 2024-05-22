@@ -207,8 +207,6 @@ if __name__ == '__main__':
 
 	print (f"it took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
-	exit()
-
 	# ---------------------------------------------------
 	# --- set up optimization model
 	# ---------------------------------------------------
@@ -238,7 +236,7 @@ if __name__ == '__main__':
 
 		percentage = float("{0:.3f}".format(100.0/len(ocean)))
 
-		for tar_x,tar_y in ocean:
+		for tar_x, tar_y in ocean:
 			c[tar_x,tar_y] = "c#"+str(tar_x)+"#"+str(tar_y)
 			model.variables.add(obj = [percentage], names = [c[tar_x,tar_y]], lb = [0], ub = [1], types = ["B"])
 
@@ -735,7 +733,7 @@ if __name__ == '__main__':
 	model.parameters.timelimit.set(instance.TIMELIMIT)
 	model.parameters.mip.tolerances.mipgap.set(0.0)
 	model.parameters.workmem.set(instance.RAM)
-	model.parameters.mip.stratetx_y.file.set(2)               # store node file on disk (uncompressed) when workmem is exceeded
+	model.parameters.mip.strategy.file.set(2)               # store node file on disk (uncompressed) when workmem is exceeded
 
 	try:
 		start = time.time()
