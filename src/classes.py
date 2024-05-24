@@ -1,6 +1,7 @@
 import sys
 
 from math import *
+from datetime import datetime
 
 import cplex
 from cplex.callbacks import LazyConstraintCallback
@@ -14,6 +15,8 @@ class Logger(object):
 				self.log = open(outdir + "/" + "bison.log", "w+")
 
 		def write(self, message):
+				if message != '\n':
+					message = datetime.now().strftime('%Y-%m-%d %H-%M-%S : ') + message
 				self.terminal.write(message)
 				self.log.write(message)
 
@@ -23,7 +26,6 @@ class Logger(object):
 				pass
 		
 # class for nice terminal output
-
 class color:
 	PURPLE 		= '\033[95m'
 	CYAN 		= '\033[96m'
