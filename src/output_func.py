@@ -62,7 +62,7 @@ def create_ocean_dat(ocean, outdir):
 
 	file.close()
 
-	print ("number of ocean pixels:",len(ocean))
+	print(f"number of ocean pixels: {len(ocean)}")
      
 def create_map_dat(instance, map, outdir):
 
