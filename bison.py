@@ -8,6 +8,7 @@ import shutil
 import importlib
 import random
 
+
 from math import *
 from datetime import datetime
 
@@ -40,59 +41,58 @@ if __name__ == '__main__':
 
 			instance = importlib.import_module("cfg." + filename)
 			start_time = time.time()
-			timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 
 	except IndexError:
 
 		print("File not found in the 'cfg' folder.")
 	
 	# creating an output directory and copy config file
-	outdir = 'outputs/' + filename+ '_' + timestamp 
+	outdir = 'outputs/' + filename+ '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') 
 	os.mkdir(outdir)
 	shutil.copy2("./cfg/" + filename + ".py", outdir)
 
 	# redirect output to screen and logfile
 	sys.stdout = Logger(outdir) 
 
-	print ("BISON - " + color.BOLD + "BI" + color.END + "static " + color.BOLD + "S" + color.END + "onar " + color.BOLD + "O" + color.END + "ptimizatio" + color.BOLD + "N" + color.END)
-	print ("")
-	print ("                                                                                           ")
-	print ("                                   @@@@@@@@@                                               ")
-	print ("                               @@@@         @@@@                                           ")
-	print ("                            @@@                 @@@                                        ")
-	print ("                         @@@                       @@@@                                    ")
-	print ("                       @@                             @@@@@                                ")
-	print ("                     @@@                                   @@@@                            ")
-	print ("                   @@@                                         @@@@                        ")
-	print ("         @@@@@@@@@@                                                @@@@                    ")
-	print ("     @@@@                                   @                          @@@@@               ")
-	print ("   @@                                       @@                              @@@@@@         ")
-	print ("  @@           @                              @@                              @@@@@        ")
-	print (" @@            @@                              @                                 @@@@      ")
-	print (" @            @ @                               @                                  @@@     ")
-	print (" @            @ @                               @                                    @@    ")
-	print (" @          @@@ @@                             @@                                   @  @   ")
-	print ("@@            @@@                             @                                     @@  @  ")
-	print (" @@                                           @@               @@                   @@@ @@ ")
-	print ("  @                                         @@                   @                  @ @@@@ ")
-	print ("   @@         @                             @                     @@                @ @ @@ ")
-	print ("     @@    @@@                               @                     @@              @@ @ @  ")
-	print ("      @@                                     @@                 @@@  @             @ @@@@  ")
-	print ("        @                                    @@               @@     @@@          @@ @  @@ ")
-	print ("        @                                     @@     @@@@@@@@@     @@   @@@@        @@   @@")
-	print ("         @                 @                  @@@@@@@       @     @         @@@       @   @")
-	print ("          @@@@@@@@@        @@                @@             @     @            @      @@ @ ")
-	print ("                   @@@   @@  @              @               @    @              @@    @@   ")
-	print ("                      @  @    @            @               @    @                @@   @@   ")
-	print ("                       @@      @@          @             @@    @                 @@   @@   ")
-	print ("                       @@       @@    @@@@@            @@@   @@                  @@   @@   ")
-	print ("                               @@@  @@@              @@    @@                    @@   @@   ")
-	print ("                             @@    @@              @@@@@@@@                     @    @@@   ")
-	print ("                             @@@@@@@@                                          @@@@@@@     ")
-	print ("")
-	print ("")
+	print(f"BISON - "+color.BOLD+"BI"+color.END+"static "+color.BOLD+"S"+color.END+"onar "+color.BOLD+"O"+color.END+"ptimizatio"+color.BOLD+"N"+color.END)
+	print(f"")
+	print(f"                                                                                           ")
+	print(f"                                   @@@@@@@@@                                               ")
+	print(f"                               @@@@         @@@@                                           ")
+	print(f"                            @@@                 @@@                                        ")
+	print(f"                         @@@                       @@@@                                    ")
+	print(f"                       @@                             @@@@@                                ")
+	print(f"                     @@@                                   @@@@                            ")
+	print(f"                   @@@                                         @@@@                        ")
+	print(f"         @@@@@@@@@@                                                @@@@                    ")
+	print(f"     @@@@                                   @                          @@@@@               ")
+	print(f"   @@                                       @@                              @@@@@@         ")
+	print(f"  @@           @                              @@                              @@@@@        ")
+	print(f" @@            @@                              @                                 @@@@      ")
+	print(f" @            @ @                               @                                  @@@     ")
+	print(f" @            @ @                               @                                    @@    ")
+	print(f" @          @@@ @@                             @@                                   @  @   ")
+	print(f"@@            @@@                             @                                     @@  @  ")
+	print(f" @@                                           @@               @@                   @@@ @@ ")
+	print(f"  @                                         @@                   @                  @ @@@@ ")
+	print(f"   @@         @                             @                     @@                @ @ @@ ")
+	print(f"     @@    @@@                               @                     @@              @@ @ @  ")
+	print(f"      @@                                     @@                 @@@  @             @ @@@@  ")
+	print(f"        @                                    @@               @@     @@@          @@ @  @@ ")
+	print(f"        @                                     @@     @@@@@@@@@     @@   @@@@        @@   @@")
+	print(f"         @                 @                  @@@@@@@       @     @         @@@       @   @")
+	print(f"          @@@@@@@@@        @@                @@             @     @            @      @@ @ ")
+	print(f"                   @@@   @@  @              @               @    @              @@    @@   ")
+	print(f"                      @  @    @            @               @    @                @@   @@   ")
+	print(f"                       @@      @@          @             @@    @                 @@   @@   ")
+	print(f"                       @@       @@    @@@@@            @@@   @@                  @@   @@   ")
+	print(f"                               @@@  @@@              @@    @@                    @@   @@   ")
+	print(f"                             @@    @@              @@@@@@@@                     @    @@@   ")
+	print(f"                             @@@@@@@@                                          @@@@@@@     ")
+	print(f"")
+	print(f"")
 
-	print ("called at " + timestamp)
+	print(f"Called")
 	
 	# ---------------------------------------------------
 	# --- read ocean elevation data file
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
 	# computing the rowsum in detection_prob
 
-	print ("Computing detection prob")
+	print(f"Computing detection prob")
 
 	# should we maybe go only with one varient???
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
 	end_time_prob = time.time()
 
-	print (f"it took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
+	print(f"It took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
 	# ---------------------------------------------------
 	# --- set up optimization model
@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
 	model = cplex.Cplex()
 
-	print ("IBM ILOG CPLEX version number: ", model.get_version())
+	print(f"IBM ILOG CPLEX version number: {model.get_version()}")
 
 	# VARIABLES
 
@@ -375,7 +375,7 @@ if __name__ == '__main__':
 	# HEURISTIC
 
 	if instance.HEURISTIC > 0:
-		print ("running",instance.HEURISTIC,"rounds of heuristic")
+		print(f"Running {instance.HEURISTIC} rounds of heuristic")
 
 		model.set_results_stream(None) # turn off messaging to screen
 		model.set_warning_stream(None)
@@ -386,7 +386,7 @@ if __name__ == '__main__':
 			best_sources = []
 			best_receivers = []
 
-			#print ("----------",0,"-----------")
+			#print(f"----------0-----------")
 
 			# PREQUEL
 
@@ -418,13 +418,13 @@ if __name__ == '__main__':
 				model.solve()
 
 				obj = model.solution.get_objective_value()
-				#print ("Solution value = ",obj)
+				#print(f"Solution value = {obj}")
 
 				fixed_sources = {}
 
 				for (sx,sy) in ocean:
 					if model.solution.get_values(s[sx,sy]) > 0.999:
-						#print ("got one source at ",sx,sy)
+						#print(f"got one source at {sx} {sy}")
 						fixed_sources[sx,sy] = 1
 
 				# fix the source variables of the positions in fixed_sources to 1, and all others to 0
@@ -447,12 +447,12 @@ if __name__ == '__main__':
 				model.solve()
 
 				obj = model.solution.get_objective_value()
-				#print ("Solution value = ",obj)
+				#print(f"Solution value = {obj}")
 
 				fixed_receivers = {}
 				for (rx,ry) in ocean:
 					if model.solution.get_values(r[rx,ry]) > 0.999:
-						#print ("got one receiver at ",rx,ry)
+						#print(f"got one receiver at {rx} {ry}")
 						fixed_receivers[rx,ry] = 1
 
 				# LOOP
@@ -468,7 +468,7 @@ if __name__ == '__main__':
 			number_of_sources = len(fixed_sources)
 			number_of_receivers = len(fixed_receivers)
 
-			print ("  found new incumbent at iteration 0 with objective value",obj)
+			print(f"  Found new incumbent at iteration 0 with objective value {obj}")
 
 			# number of sources fixed in the model
 
@@ -486,7 +486,7 @@ if __name__ == '__main__':
 			list_of_fixed_sources = []
 
 			for round in range(instance.HEURISTIC - 1):
-				print ("----------",round+1,"-----------")
+				print(f"----------{round+1}-----------")
 
 				# INNER LOOP
 
@@ -503,7 +503,7 @@ if __name__ == '__main__':
 						list_of_fixed_sources.append(fixed_sources)
 						break
 
-					#print ("do it again")
+					#print(f"do it again")
 
 				# fix the source variables of the positions in fixed_sources to 1, and all others to 0
 				# free the receivers
@@ -526,22 +526,22 @@ if __name__ == '__main__':
 
 				model.solve()
 
-				if (model.solution.get_status_string() != 'integer infeasible'):
+				if (model.solution.get_status_string() != 'Integer infeasible'):
 
 					obj = model.solution.get_objective_value()
-					#print ("Solution value = ",obj)
+					#print(f"Solution value = {obj}")
 
 					fixed_receivers = {}
 					for (rx,ry) in ocean:
 						if model.solution.get_values(r[rx,ry]) > 0.999:
-							#print ("got one receiver at ",rx,ry)
+							#print(f"got one receiver at {rx} {ry}")
 							fixed_receivers[rx,ry] = 1
 
 					if best_obj > obj:
 						best_obj = obj
 						best_receivers = fixed_receivers
 						best_sources = fixed_sources
-						print ("  found new incumbent at iteration",round,"with objective value",obj)
+						print(f"  Found new incumbent at iteration {round} with objective value {obj}")
 
 		else: # GOAL = 1
 			best_obj = -1
@@ -552,7 +552,7 @@ if __name__ == '__main__':
 			list_of_fixed_sources = []
 
 			for round in range(instance.HEURISTIC):
-				print ("----------",round,"-----------")
+				print(f"----------{round}-----------")
 				
 				# INNER LOOP
 
@@ -567,12 +567,12 @@ if __name__ == '__main__':
 
 					if fixed_sources not in list_of_fixed_sources:
 						list_of_fixed_sources.append(fixed_sources)
-						print ("new:",fixed_sources)
+						print(f"New: {fixed_sources}")
 						break
 
-					print ("(do it again)")
+					print(f"(Do it again)")
 
-				print ("fixing sources at:",fixed_sources)
+				print(f"Fixing sources at: {fixed_sources}")
 
 				old_obj = -1
 
@@ -599,12 +599,12 @@ if __name__ == '__main__':
 
 					model.solve()
 
-					print ("Solution value (ocean coverage percentage) = ", model.solution.get_objective_value())
+					print(f"Solution value (ocean coverage percentage) = {model.solution.get_objective_value()}")
 
 					fixed_receivers = {}
 					for (rx,ry) in ocean:
 						if model.solution.get_values(r[rx,ry]) > 0.999:
-							#print ("got one receiver at ",rx,ry)
+							#print(f"got one receiver at {rx} {ry}")
 							fixed_receivers[rx,ry] = 1
 
 					# fix the receiver variables of the positions in fixed_receivers to 1, and all others to 0
@@ -627,12 +627,12 @@ if __name__ == '__main__':
 					model.solve()
 
 					obj = model.solution.get_objective_value()
-					print ("Solution value (ocean coverage percentage) = ", obj)
+					print(f"Solution value (ocean coverage percentage) = {obj}")
 
 					fixed_sources = {}
 					for (sx,sy) in ocean:
 						if model.solution.get_values(s[sx,sy]) > 0.999:
-							#print ("got one source at ",sx,sy)
+							#print(f"got one source at {sx} {sy}")
 							fixed_sources[sx,sy] = 1
 
 					# LOOP
@@ -646,13 +646,13 @@ if __name__ == '__main__':
 					best_obj = obj
 					best_receivers = fixed_receivers
 					best_sources = fixed_sources
-					print ("  found new incumbent at iteration",round,"with objective value",obj)
+					print(f"  Found new incumbent at iteration {round} with objective value {obj}")
 
 		# resort to best solution (as MIP starter)
 
-		#print ("best objective ",best_obj)
-		#print ("best receivers ",best_receivers)
-		#print ("best sources ",best_sources)
+		#print(f"best objective {best_obj}")
+		#print(f"best receivers {best_receivers}")
+		#print(f"best sources {best_sources}")
 
 		for (rx,ry) in ocean:
 			if (rx,ry) in best_receivers:
@@ -702,13 +702,13 @@ if __name__ == '__main__':
 			start = time.time()
 			model.solve()
 			end = time.time()
-			print ("it took","{0:.2f}".format(end - start),"sec to solve root")
+			print(f"It took {(end - start):.2f} sec to solve root")
 
 		except (CplexSolverError) as exc:
-			print ("** Exception: ",exc)
+			print(f"** Exception: {exc}")
 
 		solution = model.solution
-		print ("Solution value = ", solution.get_objective_value())
+		print(f"Solution value = {solution.get_objective_value()}")
 		quit()
 
 	if instance.SOLVE == 1: # solve roots+cuts
@@ -718,14 +718,14 @@ if __name__ == '__main__':
 			start = time.time()
 			model.solve()
 			end = time.time()
-			print ("it took","{0:.2f}".format(end - start),"sec to solve root+cuts")
+			print(f"It took {(end - start):.2f} sec to solve root+cuts")
 
 		except (CplexSolverError) as exc:
-			print ("** Exception: ",exc)
+			print(f"** Exception: {exc}")
 
 		solution = model.solution
-		print ("Solution value = ", solution.get_objective_value())
-		print ("Best bound = ", solution.MIP.get_best_objective())
+		print(f"Solution value = {solution.get_objective_value()}")
+		print(f"Best bound = {solution.MIP.get_best_objective()}")
 		quit()
 
 	# solve to optimalitar_y (0.0%), until timelimit reached
@@ -739,10 +739,10 @@ if __name__ == '__main__':
 		start = time.time()
 		model.solve()
 		end = time.time()
-		print ("it took","{0:.2f}".format(end - start),"sec to solve")
+		print(f"It took {(end - start):.2f} sec to solve")
 
 	except (CplexSolverError) as exc:
-		print ("** Exception: ",exc)
+		print(f"** Exception: {exc}")
 
 	# solution interpretation
 
@@ -750,24 +750,24 @@ if __name__ == '__main__':
 
 	objval = 0
 
-	#print ("Solution status = ", solution.get_status())
+	#print(f"Solution status = ", solution.get_status())
 
 	if solution.get_status() == solution.status.MIP_optimal:
-		print ("MIP optimal")
+		print(f"MIP optimal")
 	elif solution.get_status() == solution.status.MIP_time_limit_feasible:
-		print ("MIP time limit feasible")
+		print(f"MIP time limit feasible")
 
 	if solution.is_primal_feasible():
 		objval = solution.get_objective_value()
 
-		print ("Solution value = ",objval)
-		solution.write(outdir+"/bison.sol")
+		print(f"Solution value = {objval}")
+		solution.write(outdir + "/bison.sol")
 	else:
-		print ("No solution available.")
+		print(f"No solution available.")
 
 	bestbound = solution.MIP.get_best_objective()
 
-	print ("Best bound = ","{0:.2f}".format(bestbound))
+	print(f"Best bound = {bestbound:.2f}")
 
 	gap = 100.0
 
@@ -778,11 +778,11 @@ if __name__ == '__main__':
 		if bestbound > 0:
 			gap = (bestbound - objval) / bestbound * 100
 
-	print ("MIP gap = ","{0:.2f}".format(gap),"%")
+	print(f"MIP gap = {gap:.2f}%")
 
 	if instance.USERCUTS == 1:
-		print ("calls of user cut callback:",usercut_cb.number_of_calls)
-		print ("number of user cut added:",usercut_cb.number_of_cuts_added)
+		print(f"Calls of user cut callback: {usercut_cb.number_of_calls}")
+		print(f"Number of user cut added: {usercut_cb.number_of_cuts_added}")
 
 	if not solution.is_primal_feasible():
 		quit()
@@ -791,26 +791,26 @@ if __name__ == '__main__':
 	# --- output solution on screen
 	# ---------------------------------------------------
 
-	print ("source locations:")
+	print(f"Source locations:")
 	for tx_x,tx_y in ocean:
 		if solution.get_values(s[tx_x,tx_y]) > 0.999:
-			print ("  ("+str(tx_x)+", "+str(tx_y)+")")
+			print(f"  ({tx_x}, {tx_y})")
 
-	print ("receiver locations:")
+	print(f"Receiver locations:")
 	for rx_x,rx_y in ocean:
 		if solution.get_values(r[rx_x,rx_y]) > 0.999:
-			print ("  ("+str(rx_x)+", "+str(rx_y)+")")
+			print(f"  ({rx_x}, {rx_y})")
 
 	if instance.GOAL == 1:
-		print ("covered ocean pixels:")
+		print(f"Covered ocean pixels:")
 		for tar_x,tar_y in ocean:
 			if solution.get_values(c[tar_x,tar_y]) > 0.999:
-				print ("  ("+str(tar_x)+", "+str(tar_y)+")")
+				print(f"  ({tar_x}, {tar_y})")
 
-		print ("not covered ocean pixels:")
+		print(f"Not covered ocean pixels:")
 		for tar_x,tar_y in ocean:
 			if solution.get_values(c[tar_x,tar_y]) < 0.001:
-				print ("  ("+str(tar_x)+", "+str(tar_y)+")")
+				print(f"  ({tar_x}, {tar_y})")
 
 	# ---------------------------------------------------
 	# --- output solution to files
@@ -935,9 +935,9 @@ if __name__ == '__main__':
 	# --- farewell
 	# ---------------------------------------------------
 
-	print (f"the total time spent is {(time.time()-start_time):.0f} seconds")
+	print(f"The total time spent is {(time.time()-start_time):.0f} seconds")
 
-	print ("output written to '" + color.RED + outdir + color.END + "'")
+	print(f"Output written to '{color.RED + outdir + color.END}'")
 
-	print ("this is the end, my only friend, the end...")
+	print(f"This is the end, my only friend, the end...")
 
