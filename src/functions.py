@@ -109,17 +109,17 @@ def check_line(x0, y0, x1, y1, map):
 
 def reading_in_ocean_data(instance):
 
-	print ("reading '" + instance.DIR + instance.INPUT + "'")
+	print(f"reading '" + instance.DIR + instance.INPUT + "'")
 
 	file = open(instance.DIR + "/" + instance.INPUT, "r")
 	elevation_data = file.read()
 	file.close()
 
 	ncols = int(re.search("ncols (.*)", elevation_data).group(1))
-	print ("number of columns:",ncols)
+	print(f"number of columns: {ncols}")
 
 	nrows = int(re.search("nrows (.*)", elevation_data).group(1))
-	print ("number of rows:", nrows)
+	print(f"number of rows: {nrows}")
 
 	latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
 	longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
@@ -129,7 +129,7 @@ def reading_in_ocean_data(instance):
 
 	if (nrows != len(elevation_data)+1):
 
-		print ("Not enough data in file")
+		print(f"Not enough data in file")
 		quit()
 
 	map = {}
@@ -165,7 +165,7 @@ def reading_in_ocean_data(instance):
 
 def compute_coverage_triples(instance, map, ocean):
 
-	print ("Computing coverage")
+	print(f"Computing coverage")
 
 	detection_prob = {}
 
@@ -241,16 +241,16 @@ def compute_coverage_triples(instance, map, ocean):
 
 											alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
 
-											#print ("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+											#print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
 											if d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
 
 												detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y] = 1 # sure detection
 
-												#print ("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+												#print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
 	end_time_coverage = time.time()
 
-	print (f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
+	print(f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
 
 	return detection_prob
