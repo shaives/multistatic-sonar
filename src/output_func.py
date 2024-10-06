@@ -56,9 +56,9 @@ def create_ocean_dat(ocean, outdir):
 
 	file = open(outdir + "/ocean.dat", "w+")
 
-	for i,j in ocean:
+	for x,y,z in ocean:
 
-		file.write(str(i) + " " + str(j)+"\n")
+		file.write(str(x) + " " + str(y) + " " + str(z) + "\n")
 
 	file.close()
 
