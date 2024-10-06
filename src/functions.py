@@ -5,252 +5,296 @@ import time
 from math import *
 
 # Euclidean distance between two points
-def d(x0, y0, x1, y1):
-	return sqrt((x0-x1)**2 + (y0-y1)**2)
+def d(x1, y1, z1, x2, y2, z2):
+    return sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)
 
 # target strength piecewise linear function g(cos(theta))
 def g_cos(theta, instance):
-	theta = np.asarray(theta)
-	scalar_input = False
-	if theta.ndim == 0:
-		theta = theta[None]
-		scalar_input = True
+    theta = np.asarray(theta)
+    scalar_input = False
+    if theta.ndim == 0:
+        theta = theta[None]
+        scalar_input = True
 
-	ret = []
+    ret = []
 
-	for x in theta:
-		for i in range(len(instance.TS)-1):
-			w_i = cos(instance.TS[i][0]/180.0*pi)
-			w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
-			s_i = instance.TS[i][1]
-			s_ip1 = instance.TS[i+1][1]
-			alpha = cos(x)
+    for x in theta:
+        for i in range(len(instance.TS)-1):
+            w_i = cos(instance.TS[i][0]/180.0*pi)
+            w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
+            s_i = instance.TS[i][1]
+            s_ip1 = instance.TS[i+1][1]
+            alpha = cos(x)
 
-			if w_i >= alpha and alpha >= w_ip1:
-				ret.append( s_i + ( (s_ip1 - s_i) * (alpha - w_i) ) / ( w_ip1 - w_i ) )
-				break
-			elif -w_i <= alpha and alpha <= -w_ip1:
-				ret.append( s_i + ( (s_ip1 - s_i) * (alpha + w_i) ) / ( w_i - w_ip1 ) )
-				break
+            if w_i >= alpha and alpha >= w_ip1:
+                ret.append( s_i + ( (s_ip1 - s_i) * (alpha - w_i) ) / ( w_ip1 - w_i ) )
+                break
+            elif -w_i <= alpha and alpha <= -w_ip1:
+                ret.append( s_i + ( (s_ip1 - s_i) * (alpha + w_i) ) / ( w_i - w_ip1 ) )
+                break
 
-	if scalar_input:
-		return np.squeeze(ret)
-	
-	return ret
+    if scalar_input:
+        return np.squeeze(ret)
+    
+    return ret
 
 def g(alpha, instance):
-	for i in range(len(instance.TS)-1):
-		w_i = cos(instance.TS[i][0]/180.0*pi)
-		w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
-		s_i = instance.TS[i][1]
-		s_ip1 = instance.TS[i+1][1]
 
-		if w_i >= alpha and alpha >= w_ip1:
-			return ( s_i + ( (s_ip1 - s_i) * (alpha - w_i) ) / ( w_ip1 - w_i ) )
-		elif -w_i <= alpha and alpha <= -w_ip1:
-			return ( s_i + ( (s_ip1 - s_i) * (alpha + w_i) ) / ( w_i - w_ip1 ) )
+    for i in range(len(instance.TS)-1):
+        w_i = cos(instance.TS[i][0]/180.0*pi)
+        w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
+        s_i = instance.TS[i][1]
+        s_ip1 = instance.TS[i+1][1]
 
-	return 0
+        if w_i >= alpha and alpha >= w_ip1:
+            return ( s_i + ( (s_ip1 - s_i) * (alpha - w_i) ) / ( w_ip1 - w_i ) )
+        elif -w_i <= alpha and alpha <= -w_ip1:
+            return ( s_i + ( (s_ip1 - s_i) * (alpha + w_i) ) / ( w_i - w_ip1 ) )
 
-def check_line(x0, y0, x1, y1, map):
+    return 0
 
-	"""
-	Check if a line intersects with any obstacle in the map.
+def check_line(x1, y1, z1, x2, y2, z2, ocean):
 
-	Ref: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+    """
+    Check if a line intersects with any obstacle in the map.
 
-	Parameters:
-	- x0 (int): x-coordinate of the starting point of the line.
-	- y0 (int): y-coordinate of the starting point of the line.
-	- x1 (int): x-coordinate of the ending point of the line.
-	- y1 (int): y-coordinate of the ending point of the line.
-	- map (list): 2D list representing the map with obstacle values.
+    Ref: https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/
 
-	Returns:
-	- int: If the line intersects with an obstacle, returns 1.
-	- None: If the line does not intersect with any obstacle.
-	"""
+    Parameters:
+    - x1 (int): x-coordinate of the starting point of the line.
+    - y1 (int): y-coordinate of the starting point of the line.
+    - z1 (int): z-coordinate of the starting point of the line.
+    - x2 (int): x-coordinate of the ending point of the line.
+    - y2 (int): y-coordinate of the ending point of the line.
+    - z2 (int): z-coordinate of the ending point of the line.
+    - ocean (dictonary): 3D dictonary representing ocean
 
-	dx = abs(x1-x0)
+    Returns:
+    - int: If the line intersects with an obstacle, returns 1.
+    - None: If the line does not intersect with any obstacle.
+    """
 
-	if x0 < x1:
-		sx = 1 
+    ListOfPoints = []
+    ListOfPoints.append((x1, y1, z1))
 
-	else:
-		sx = -1
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    dz = abs(z2 - z1)
 
-	dy = -abs(y1-y0)
+    if (x2 > x1):
+        xs = 1
+    else:
+        xs = -1
+    if (y2 > y1):
+        ys = 1
+    else:
+        ys = -1
+    if (z2 > z1):
+        zs = 1
+    else:
+        zs = -1
+ 
+    # Driving axis is X-axis"
+    if (dx >= dy and dx >= dz):        
+        p1 = 2 * dy - dx
+        p2 = 2 * dz - dx
+        while (x1 != x2):
+            x1 += xs
+            if (p1 >= 0):
+                y1 += ys
+                p1 -= 2 * dx
+            if (p2 >= 0):
+                z1 += zs
+                p2 -= 2 * dx
+            p1 += 2 * dy
+            p2 += 2 * dz
+            ListOfPoints.append((x1, y1, z1))
+ 
+    # Driving axis is Y-axis"
+    elif (dy >= dx and dy >= dz):       
+        p1 = 2 * dx - dy
+        p2 = 2 * dz - dy
+        while (y1 != y2):
+            y1 += ys
+            if (p1 >= 0):
+                x1 += xs
+                p1 -= 2 * dy
+            if (p2 >= 0):
+                z1 += zs
+                p2 -= 2 * dy
+            p1 += 2 * dx
+            p2 += 2 * dz
+            ListOfPoints.append((x1, y1, z1))
+ 
+    # Driving axis is Z-axis"
+    else:        
+        p1 = 2 * dy - dz
+        p2 = 2 * dx - dz
+        while (z1 != z2):
+            z1 += zs
+            if (p1 >= 0):
+                y1 += ys
+                p1 -= 2 * dz
+            if (p2 >= 0):
+                x1 += xs
+                p2 -= 2 * dz
+            p1 += 2 * dy
+            p2 += 2 * dx
+            ListOfPoints.append((x1, y1, z1))
 
-	if y0 < y1:
-		sy = 1
+    #check this have to check all points
 
-	else:
-		sy = -1
+    for point in ListOfPoints:
 
-	err = dx + dy
+        if point not in ocean:
 
-	while True:
+            return 1
+            
 
-		if map[x0][y0] >= 0.0:
-			return 1
-		
-		if x0 == x1 and y0 == y1:
-			return None
-		
-		e2 = 2 * err
-
-		if e2 > dy:
-			err = err + dy
-			x0 = x0 + sx
-
-		if e2 < dx:
-			err = err + dx
-			y0 = y0 + sy
+    return None     
 
 def reading_in_ocean_data(instance):
 
-	print(f"reading '" + instance.DIR + instance.INPUT + "'")
+    print(f"reading '" + instance.DIR + instance.INPUT + "'")
 
-	file = open(instance.DIR + "/" + instance.INPUT, "r")
-	elevation_data = file.read()
-	file.close()
+    file = open(instance.DIR + "/" + instance.INPUT, "r")
+    elevation_data = file.read()
+    file.close()
 
-	ncols = int(re.search("ncols (.*)", elevation_data).group(1))
-	print(f"number of columns: {ncols}")
+    ncols = int(re.search("ncols (.*)", elevation_data).group(1))
+    print(f"number of columns: {ncols}")
 
-	nrows = int(re.search("nrows (.*)", elevation_data).group(1))
-	print(f"number of rows: {nrows}")
+    nrows = int(re.search("nrows (.*)", elevation_data).group(1))
+    print(f"number of rows: {nrows}")
 
-	latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
-	longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
-	data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
+    latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
+    longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
+    data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
 
-	elevation_data = re.split("\n+", elevation_data)[6:-1]
+    elevation_data = re.split("\n+", elevation_data)[6:-1]
 
-	if (nrows != len(elevation_data)+1):
+    if (nrows != len(elevation_data)+1):
 
-		print(f"Not enough data in file")
-		quit()
+        print(f"Not enough data in file")
+        quit()
 
-	map = {}
-	ocean = {}
-	min_depth = -11022.0
-	max_depth = 0.0
+    map = {}
+    ocean = {}
+    min_depth = -11022.0
+    max_depth = 0.0
 
-	for i, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
+    # depth up to 400m in 40m steps
+    for z in range(0, 11, 1):
 
-		line_dict = {}
-		
-		for j, element in enumerate(re.split("\s+", line_str)[:instance.X]):
+        # for each line in the data
+        for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
+            
+            line_dict = {}
+            
+            # for each element in the line
+            for x, element in enumerate(re.split("\s+", line_str)[:instance.X]):
 
-			# if needed, here has to be the code for avg of depths
+                element = float(element)
 
-			if float(element) < 0:
+                # if needed, here has to be the code for avg of depths
 
-				ocean[i,j] = 1
+                # if element < step * -40m
+                if element < z*-40:
 
-				if float(element) > min_depth and float(element) < 0:
+                    ocean[x,y,z] = 1
 
-					min_depth = float(element)
+                    if z == 0:
 
-				if float(element) < max_depth:
+                        if element > min_depth and element < 0:
 
-					max_depth = float(element)
+                            min_depth = element
 
-				line_dict[j] = float(element)
+                        if element < max_depth:
 
-		map[i] = line_dict
+                            max_depth = element
 
-	return map, ocean, min_depth, max_depth
+                        line_dict[x] = element
+
+            if z == 0:
+                map[y] = line_dict
+
+    return map, ocean, min_depth, max_depth
 
 def compute_coverage_triples(instance, map, ocean):
 
-	print(f"Computing coverage")
+    print(f"Computing coverage")
 
-	detection_prob = {}
+    detection_prob = {}
 
-	start_time_coverage = time.time()
+    start_time_coverage = time.time()
 
-	if len(instance.TS) == 0: # without TS
+    if len(instance.TS) == 0: # without TS
 
-		for tar_x, tar_y in ocean: # target
+        for tar_x, tar_y, tar_z in ocean: # target
 
-			for tx_x, tx_y in ocean: # source
+            print(f"target: {tar_x}, {tar_y}, {tar_z}")
 
-				for rx_x, rx_y in ocean: # receiver
+            for tx_x, tx_y, tx_z in ocean: # source
 
-					# no obstacles between source-target and target-receiver, and source-reiver	
-					if check_line(tx_x, tx_y, tar_x, tar_y, map) == None and check_line(tar_x, tar_y, rx_x, rx_y, map) == None:
+                if tx_z != 0: # exclude source not at the surface)
+                    continue
 
-						if instance.CC == 0: # probabilistic model
-							
-							if (((d(tx_x, tx_y, tar_x, tar_y) * d(rx_x, rx_y, tar_x, tar_y)) / (instance.rho_0**2) - 1) / instance.b1) < e+10: # avoid numerical trouble from powers of large numbers
-								aux = instance.pmax * (1 / (1 + 10**(((d(tx_x, tx_y, tar_x, tar_y) * d(rx_x, rx_y, tar_x, tar_y)) / (instance.rho_0**2) - 1) / instance.b1))) * (1 / (1 + 10**((1 - (d(tx_x, tx_y, tar_x, tar_y) + d(rx_x, rx_y, tar_x, tar_y)) / (d(tx_x, tx_y, rx_x, rx_y) + 2*instance.rb)) / instance.b2)))
-								
-								if aux > instance.pmin:
-									
-									detection_prob[tar_x,tar_y,0,tx_x,tx_y,rx_x,rx_y] = log(1 - aux) # detection probabilitar_y
+                for rx_x, rx_y, rx_z in ocean: # receiver
 
-						else: # cookie-cutter model
+                    if rx_z != 0: # exclude source not at the surface)
+                        continue
 
-							if d(tx_x, tx_y, tar_x, tar_y) * d(rx_x, rx_y, tar_x, tar_y) <= instance.rho_0**2 and d(tx_x, tx_y, tar_x, tar_y) + d(rx_x, rx_y, tar_x, tar_y) >= d(tx_x, tx_y, rx_x, rx_y) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
-								
-								detection_prob[tar_x, tar_y, 0, tx_x, tx_y, rx_x, rx_y] = 1 # sure detection
+                    # no obstacles between source-target and target-receiver, and source-reiver	
+                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
-	else: # with TS
+                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) <= instance.rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
+                            
+                            detection_prob[tar_x, tar_y, tar_z, 0, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
-		# only compute the angle we need to compute???
+    else: # with TS
 
-		for tar_x, tar_y in ocean: # target
+        for tar_x, tar_y, tar_z in ocean: # target
 
-			for tx_x, tx_y in ocean: # source
+            for tx_x, tx_y, tx_z in ocean: # source
 
-				if (tx_x,tx_y) != (tar_x,tar_y): # exclude equalitar_y of source and target (direct blast effect)
-					
-					for rx_x, rx_y in ocean: # receiver
+                if tx_z != 0: # exclude source not at the surface)
+                    continue
 
-						if (rx_x,rx_y) != (tar_x,tar_y): # exclude equalitar_y of receiver and target (direct blast effect)
-						
-							# no obstacles between source-target and target-receiver, and source-reiver
-							if check_line(tx_x, tx_y, tar_x, tar_y, map) == None and check_line(tar_x, tar_y, rx_x, rx_y, map) == None:
+                if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of source and target (direct blast effect)
+                    
+                    for rx_x, rx_y, rx_z in ocean: # receiver
 
-								sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2) )
-								sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2) )
+                        if rx_z != 0: # exclude source not at the surface)
+                            continue
 
-								for theta in range(0, 180, instance.STEPS): # target angle
+                        if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of receiver and target (direct blast effect)
+                        
+                            # no obstacles between source-target and target-receiver, and source-reiver
+                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
-									my_theta = theta / 180.0 * pi
-									my_sin_theta = sin(my_theta)
-									my_cos_theta = cos(my_theta)
+                                sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
+                                sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
 
-									if instance.CC == 0: # probabilistic model
+                                for theta in range(0, 180, instance.STEPS): # target angle
 
-										alpha = ( ((tx_x-tar_x)*my_cos_theta + (tx_y-tar_y)*my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x)*my_cos_theta + (rx_y-tar_y)*my_sin_theta ) * sqrt_rx_tar )
+                                    my_theta = theta / 180.0 * pi
+                                    my_sin_theta = sin(my_theta)
+                                    my_cos_theta = cos(my_theta)
+                                      
+                                    if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) + 2*instance.rb: # check for outside direct-blast-effect
 
-										if (((d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y)) / ((instance.rho_0 + g(alpha, instance))**2) - 1)/instance.b1) < e+10: # avoid numerical trouble from powers of large numbers
-											
-											aux = instance.pmax * (1 / (1 + 10**(((d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y)) / ((instance.rho_0 + g(alpha, instance))**2) - 1)/instance.b1))) * (1 / (1 + 10**((1 - (d(tx_x,tx_y,tar_x,tar_y) + d(rx_x,rx_y,tar_x,tar_y)) / (d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb))/instance.b2)))
-											
-											if aux > instance.pmin:
-												
-												detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y] = log(1 - aux) # detection probabilitar_y
+                                        alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
 
-									else: # cookie-cutter model
-										
-										if d(tx_x,tx_y,tar_x,tar_y) + d(rx_x,rx_y,tar_x,tar_y) >= d(tx_x,tx_y,rx_x,rx_y) + 2*instance.rb: # check for outside direct-blast-effect
+                                        #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
-											alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
+                                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
 
-											#print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+                                            detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
-											if d(tx_x,tx_y,tar_x,tar_y) * d(rx_x,rx_y,tar_x,tar_y) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
+                                            #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
-												detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y] = 1 # sure detection
+    end_time_coverage = time.time()
 
-												#print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+    print(f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
 
-	end_time_coverage = time.time()
-
-	print(f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
-
-	return detection_prob
+    return detection_prob
