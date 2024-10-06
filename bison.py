@@ -142,48 +142,40 @@ if __name__ == '__main__':
 	max = -10e+10
 	min = 10e+10
 
-	for tar_x,tar_y in ocean:
+	for tar_x, tar_y, tar_z in ocean:
 		for theta in range(0,180,instance.STEPS): # target angle
-			for rx_x,rx_y in ocean:
+			for rx_x, rx_y, rx_z in ocean:
 				sum = 0
-				for tx_x,tx_y in ocean:
-					if (tar_x, tar_y, theta, tx_x, tx_y, rx_x, rx_y) in detection_prob:
-						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+				for tx_x, tx_y, tx_z in ocean:
 
-				detection_prob_rowsum_r[tar_x, tar_y, theta, rx_x, rx_y] = sum
+					if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+						sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
+
+				detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = sum
 
 				if sum > max:
 					max = sum
 				if sum < min:
 					min = sum
 
-	if instance.BOUND == 1:
-		if instance.CC == 0: # probabilistic model
-			for tar_x,tar_y in ocean:
+			for tar_x, tar_y, tar_z in ocean:
 				for theta in range(0,180,instance.STEPS): # target angle
-					for rx_x,rx_y in ocean:
+					for rx_x, rx_y, rx_z in ocean:
 
-						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = min
-
-		else: # cookie-cutter model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for rx_x,rx_y in ocean:
-
-						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = max
+						detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
 
 
 	detection_prob_rowsum_s = {}
 
-	for tar_x,tar_y in ocean:
+	for tar_x, tar_y, tar_z in ocean:
 		for theta in range(0,180,instance.STEPS): # target angle
-			for tx_x,tx_y in ocean:
+			for tx_x, tx_y, tx_z in ocean:
 				sum = 0
-				for rx_x,rx_y in ocean:
-					if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
-						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+				for rx_x, rx_y, rx_z in ocean:
+					if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+						sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-				detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = sum
+				detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = sum
 
 				if sum > max:
 					max = sum
@@ -191,19 +183,11 @@ if __name__ == '__main__':
 					min = sum
 
 	if instance.BOUND == 1:
-		if instance.CC == 0: # probabilistic model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for tx_x,tx_y in ocean:
+		for tar_x, tar_y, tar_z in ocean:
+			for theta in range(0,180,instance.STEPS): # target angle
+				for tx_x, tx_y, tx_z in ocean:
 
-						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = min
-
-		else: # cookie-cutter model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for tx_x,tx_y in ocean:
-
-						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = max
+					detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = max
 
 	end_time_prob = time.time()
 
@@ -219,41 +203,38 @@ if __name__ == '__main__':
 
 	# VARIABLES
 
-	s = {} # sources, =1, if a source is located on candidate location tx_x,tx_y
-	r = {} # receivers, =1, if a receiver is located on candidate location tx_x,tx_y
+	s = {} # sources, =1, if a source is located on candidate location tx_x, tx_y, tx_z
+	r = {} # receivers, =1, if a receiver is located on candidate location tx_x, tx_y, tx_z
 
-	for tx_x,tx_y in ocean:
-		s[tx_x,tx_y] = "s#"+str(tx_x)+"#"+str(tx_y)
-		r[tx_x,tx_y] = "r#"+str(tx_x)+"#"+str(tx_y)
+	for tx_x, tx_y, tx_z in ocean:
+		s[tx_x, tx_y, tx_z] = "s#"+str(tx_x)+"#"+str(tx_y)+"#"+str(tx_z)
+		r[tx_x, tx_y, tx_z] = "r#"+str(tx_x)+"#"+str(tx_y)+"#"+str(tx_z)
 
 		if instance.GOAL == 0: # optimization goal: cover all pixels, minimize deployment cost
-			model.variables.add(obj = [instance.S], names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
-			model.variables.add(obj = [instance.R], names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(obj = [instance.S], names = [s[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(obj = [instance.R], names = [r[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
 		else: # deploy equipment, maximize coverage
-			model.variables.add(names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
-			model.variables.add(names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(names = [s[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
+			model.variables.add(names = [r[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
 
 	if instance.GOAL == 1: # deploy equipment, maximize coverage
-		c = {} # coverage, =1, if some source-receiver pair covers location tar_x,tar_y
+		c = {} # coverage, =1, if some source-receiver pair covers location tar_x, tar_y, tar_z
 
 		percentage = float("{0:.3f}".format(100.0/len(ocean)))
 
-		for tar_x, tar_y in ocean:
-			c[tar_x,tar_y] = "c#"+str(tar_x)+"#"+str(tar_y)
-			model.variables.add(obj = [percentage], names = [c[tar_x,tar_y]], lb = [0], ub = [1], types = ["B"])
+		for tar_x, tar_y, tar_z in ocean:
+			c[tar_x, tar_y, tar_z] = "c#"+str(tar_x)+"#"+str(tar_y)
+			model.variables.add(obj = [percentage], names = [c[tar_x, tar_y, tar_z]], lb = [0], ub = [1], types = ["B"])
 
 	y = {}
 
-	for tar_x,tar_y,theta,tx_x,tx_y in detection_prob_rowsum_s:
-		y[tar_x,tar_y,theta,tx_x,tx_y] = "y#"+str(tar_x)+"#"+str(tar_y)+"#"+str(theta)+"#"+str(tx_x)+"#"+str(tx_y)
+	for tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z in detection_prob_rowsum_s:
+		y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = "y#"+str(tar_x)+"#"+str(tar_y)+"#"+str(theta)+"#"+str(tx_x)+"#"+str(tx_y)
 
-		if instance.CC == 0: # probabilistic model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], lb = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], ub = [0], types = ["C"])
-		else: # cookie-cutter model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["C"])
+		model.variables.add(names = [y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z]], ub = [detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z]], lb = [0], types = ["C"])
 
-			# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
-			#model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["I"])
+		# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
+		#model.variables.add(names = [y[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z]], ub = [detection_prob_rowsum_s[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z]], lb = [0], types = ["I"])
 
 	# CONSTRAINTS
 
@@ -265,8 +246,8 @@ if __name__ == '__main__':
 		thevars = []
 		thecoefs = []
 
-		for tx_x,tx_y in ocean:
-			thevars.append(s[tx_x,tx_y])
+		for tx_x, tx_y, tx_z in ocean:
+			thevars.append(s[tx_x, tx_y, tx_z])
 			thecoefs.append(1.0)
 
 		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.S])
@@ -274,8 +255,8 @@ if __name__ == '__main__':
 		thevars = []
 		thecoefs = []
 
-		for rx_x,rx_y in ocean:
-			thevars.append(r[rx_x,rx_y])
+		for rx_x, rx_y, rx_z in ocean:
+			thevars.append(r[rx_x, rx_y, rx_z])
 			thecoefs.append(1.0)
 
 		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.R])
@@ -286,8 +267,8 @@ if __name__ == '__main__':
 		thevars = []
 		thecoefs = []
 
-		for tx_x,tx_y in ocean:
-			thevars.append(s[tx_x,tx_y])
+		for tx_x, tx_y, tx_z in ocean:
+			thevars.append(s[tx_x, tx_y, tx_z])
 			thecoefs.append(1.0)
 
 		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
@@ -295,8 +276,8 @@ if __name__ == '__main__':
 		thevars = []
 		thecoefs = []
 
-		for rx_x,rx_y in ocean:
-			thevars.append(r[rx_x,rx_y])
+		for rx_x, rx_y, rx_z in ocean:
+			thevars.append(r[rx_x, rx_y, rx_z])
 			thecoefs.append(1.0)
 
 		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
@@ -305,50 +286,38 @@ if __name__ == '__main__':
 
 	# coverage for each ocean pixel
 	
-	for tar_x,tar_y in ocean:
+	for tar_x, tar_y, tar_z in ocean:
 		for theta in range(0,180,instance.STEPS): # target angle
 			thevars = []
 			thecoefs = []
 			
-			for tx_x,tx_y in ocean:
-				thevars.append(s[tx_x,tx_y])
-				thevars.append(y[tar_x,tar_y,theta,tx_x,tx_y])
-				thecoefs.append(detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y])
+			for tx_x, tx_y, tx_z in ocean:
+				thevars.append(s[tx_x, tx_y, tx_z])
+				thevars.append(y[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z])
+				thecoefs.append(detection_prob_rowsum_s[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z])
 				thecoefs.append(-1.0)
 
 			if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-				thevars.append(c[tar_x,tar_y])
-				if instance.CC == 0: # probabilistic model
-					thecoefs.append(-log(1-instance.dp))
-				else: # cookie-cutter model
-					thecoefs.append(-1.0)
+				thevars.append(c[tar_x, tar_y, tar_z])
+				thecoefs.append(-1.0)
 					
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
-				else: # goal: deploy equipment
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
-				else: # goal: deploy equipment
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0]) 
+			if instance.GOAL == 0: # goal: cover all pixels
+				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
+			else: # goal: deploy equipment
+				model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0]) 
 	
 	# linearization constraints
 	
-	for tar_x,tar_y,theta,tx_x,tx_y in detection_prob_rowsum_s:
-		thevars = [y[tar_x,tar_y,theta,tx_x,tx_y],s[tx_x,tx_y]]
-		thecoefs = [1.0,-detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]]
+	for tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z in detection_prob_rowsum_s:
+		thevars = [y[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z],s[tx_x, tx_y, tx_z]]
+		thecoefs = [1.0,-detection_prob_rowsum_s[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z]]
 		
-		for rx_x,rx_y in ocean:
-			if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
-				thevars.append(r[rx_x,rx_y])
-				thecoefs.append(detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y])
+		for rx_x, rx_y, rx_z in ocean:
+			if (tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z,rx_x, rx_y, rx_z) in detection_prob:
+				thevars.append(r[rx_x, rx_y, rx_z])
+				thecoefs.append(detection_prob[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z,rx_x, rx_y, rx_z])
 
-		if instance.CC == 0: # probabilistic model
-			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-		else: # cookie-cutter model
-			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])  
+		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])  
 
 
 
@@ -472,8 +441,8 @@ if __name__ == '__main__':
 			thevars = []
 			thecoefs = []
 
-			for tx_x,tx_y in ocean:
-				thevars.append(s[tx_x,tx_y])
+			for tx_x, tx_y, tx_z in ocean:
+				thevars.append(s[tx_x, tx_y, tx_z])
 				thecoefs.append(1.0)
 
 			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [number_of_sources])
@@ -789,24 +758,24 @@ if __name__ == '__main__':
 	# ---------------------------------------------------
 
 	print(f"Source locations:")
-	for tx_x,tx_y in ocean:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999:
+	for tx_x, tx_y, tx_z in ocean:
+		if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
 			print(f"  ({tx_x}, {tx_y})")
 
 	print(f"Receiver locations:")
-	for rx_x,rx_y in ocean:
-		if solution.get_values(r[rx_x,rx_y]) > 0.999:
+	for rx_x, rx_y, rx_z in ocean:
+		if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
 			print(f"  ({rx_x}, {rx_y})")
 
 	if instance.GOAL == 1:
 		print(f"Covered ocean pixels:")
-		for tar_x,tar_y in ocean:
-			if solution.get_values(c[tar_x,tar_y]) > 0.999:
+		for tar_x, tar_y, tar_z in ocean:
+			if solution.get_values(c[tar_x, tar_y, tar_z]) > 0.999:
 				print(f"  ({tar_x}, {tar_y})")
 
 		print(f"Not covered ocean pixels:")
-		for tar_x,tar_y in ocean:
-			if solution.get_values(c[tar_x,tar_y]) < 0.001:
+		for tar_x, tar_y, tar_z in ocean:
+			if solution.get_values(c[tar_x, tar_y, tar_z]) < 0.001:
 				print(f"  ({tar_x}, {tar_y})")
 
 	# ---------------------------------------------------
@@ -817,8 +786,8 @@ if __name__ == '__main__':
 
 	file.write("rx ry\n")
 
-	for rx_x,rx_y in ocean:
-		if solution.get_values(r[rx_x,rx_y]) > 0.999:
+	for rx_x, rx_y, rx_z in ocean:
+		if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
 			file.write(str(rx_x)+" "+str(rx_y)+"\n")
 
 	file.close()
@@ -827,8 +796,8 @@ if __name__ == '__main__':
 
 	file.write("sx sy\n")
 
-	for tx_x,tx_y in ocean:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999:
+	for tx_x, tx_y, tx_z in ocean:
+		if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
 			file.write(str(tx_x)+" "+str(tx_y)+"\n")
 
 	file.close()
@@ -839,12 +808,12 @@ if __name__ == '__main__':
 
 	cov_val = {}
 
-	for tar_x,tar_y in ocean:
-		cov_val[tar_x,tar_y] = 0
+	for tar_x, tar_y, tar_z in ocean:
+		cov_val[tar_x, tar_y, tar_z] = 0
 
-	for tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y in detection_prob:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999 and solution.get_values(r[rx_x,rx_y]) > 0.999:
-			cov_val[tar_x,tar_y] = cov_val[tar_x,tar_y] + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+	for tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z,rx_x, rx_y, rx_z in detection_prob:
+		if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999 and solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+			cov_val[tar_x, tar_y, tar_z] = cov_val[tar_x, tar_y, tar_z] + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
 	
 	# ---------------------------------------------------
@@ -888,26 +857,18 @@ if __name__ == '__main__':
 				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
 
 	if instance.GOAL == 1: # goal: maximize coverage
-		for tar_x,tar_y in ocean:
-			if instance.CC == 1: # cookie-cutter model
-				if solution.get_values(c[tar_x,tar_y]) > 0.999:
-					val = str(cov_val[tar_x,tar_y])
-				else:
-					val = "X"
-			else: # probabilistic model
-				if solution.get_values(c[tar_x,tar_y]) > 0.999:
-					val = str(int(100*(1-exp(cov_val[tar_x,tar_y]))))
-				else:
-					val = "X("+str(int(100*(1-exp(cov_val[tar_x,tar_y]))))+")"
+		for tar_x, tar_y, tar_z in ocean:
+			if solution.get_values(c[tar_x, tar_y, tar_z]) > 0.999:
+				val = str(cov_val[tar_x, tar_y, tar_z])
+			else:
+				val = "X"
 
 			file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
 
 	else: # goal: minimize cost for deployed equipment
-		for tar_x,tar_y in ocean:
-			if instance.CC == 1: # cookie-cutter model
-				val = str(cov_val[tar_x,tar_y])
-			else: # probabilistic model
-				val = str(int(100*(1-exp(cov_val[tar_x,tar_y]))))
+		for tar_x, tar_y, tar_z in ocean:
+			val = str(cov_val[tar_x, tar_y, tar_z])
+
 
 			file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
 
