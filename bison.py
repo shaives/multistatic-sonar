@@ -299,7 +299,7 @@ if __name__ == '__main__':
             for tx_x, tx_y, tx_z in ocean_surface:
 
                 thevars.append(s[tx_x, tx_y, tx_z])
-                thevars.append(y[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z])
+                thevars.append(y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z])
                 thecoefs.append(detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z])
                 thecoefs.append(-1.0)
 
