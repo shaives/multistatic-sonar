@@ -6,10 +6,10 @@ RAM =2*8192	# 0=use disk, 1=use RAM for storing data
 X = 10 # number of pixels in x-direction
 Y = 10 # number of pixels in y-direction
 
-GOAL = 0 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
+GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
-S = 10 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
-R = 1 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
+S = 12 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
+R = 4 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
 rho_0 = 2 # range of the day (in pixels)
 rb = 1 # pulse length (for direct-blast-effect) (in pixels)
