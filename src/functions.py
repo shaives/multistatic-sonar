@@ -180,6 +180,7 @@ def reading_in_ocean_data(instance):
 
     map = {}
     ocean = {}
+    ocean_surface = {}
     min_depth = -11022.0
     max_depth = 0.0
 
@@ -197,6 +198,10 @@ def reading_in_ocean_data(instance):
                 element = float(element)
 
                 # if needed, here has to be the code for avg of depths
+
+                if z == 0 and element < 0:
+
+                    ocean_surface[x,y,z] = 1
 
                 # if element < step * -40m
                 if element < z*-40:
@@ -218,9 +223,9 @@ def reading_in_ocean_data(instance):
             if z == 0:
                 map[y] = line_dict
 
-    return map, ocean, min_depth, max_depth
+    return map, ocean, ocean_surface, min_depth, max_depth
 
-def compute_coverage_triples(instance, map, ocean):
+def compute_coverage_triples(instance, ocean, ocean_surface):
 
     print(f"Computing coverage")
 
@@ -232,17 +237,9 @@ def compute_coverage_triples(instance, map, ocean):
 
         for tar_x, tar_y, tar_z in ocean: # target
 
-            print(f"target: {tar_x}, {tar_y}, {tar_z}")
+            for tx_x, tx_y, tx_z in ocean_surface: # source
 
-            for tx_x, tx_y, tx_z in ocean: # source
-
-                if tx_z != 0: # exclude source not at the surface)
-                    continue
-
-                for rx_x, rx_y, rx_z in ocean: # receiver
-
-                    if rx_z != 0: # exclude source not at the surface)
-                        continue
+                for rx_x, rx_y, rx_z in ocean_surface: # receiver
 
                     # no obstacles between source-target and target-receiver, and source-reiver	
                     if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
@@ -255,17 +252,11 @@ def compute_coverage_triples(instance, map, ocean):
 
         for tar_x, tar_y, tar_z in ocean: # target
 
-            for tx_x, tx_y, tx_z in ocean: # source
-
-                if tx_z != 0: # exclude source not at the surface)
-                    continue
+            for tx_x, tx_y, tx_z in ocean_surface: # source
 
                 if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of source and target (direct blast effect)
                     
-                    for rx_x, rx_y, rx_z in ocean: # receiver
-
-                        if rx_z != 0: # exclude source not at the surface)
-                            continue
+                    for rx_x, rx_y, rx_z in ocean_surface: # receiver
 
                         if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of receiver and target (direct blast effect)
                         
