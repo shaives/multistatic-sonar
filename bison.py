@@ -386,7 +386,7 @@ if __name__ == '__main__':
                 model.write(outdir+"/bison.lp")
 
                 # get positions of sources
-
+                print(f"Try to solve 0")
                 model.solve()
 
                 obj = model.solution.get_objective_value()
@@ -415,7 +415,7 @@ if __name__ == '__main__':
                     model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
                 # get positions of sources
-
+                
                 model.solve()
 
                 obj = model.solution.get_objective_value()
@@ -463,6 +463,7 @@ if __name__ == '__main__':
                 # INNER LOOP
 
                 while True:
+
                     fixed_sources = {}
 
                     while len(fixed_sources) < number_of_sources:
@@ -492,10 +493,10 @@ if __name__ == '__main__':
                     model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
                     model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-                #model.write(outdir+"/bison.lp")
+                model.write(outdir+"/bison.lp")
 
                 # get positions of sources
-
+                print(f"Try to solve 1")
                 model.solve()
 
                 if (model.solution.get_status_string() != 'Integer infeasible'):
@@ -565,7 +566,7 @@ if __name__ == '__main__':
                         model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
                         model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-                    #model.write(outdir+"/bison.lp")
+                    model.write(outdir+"/bison.lp")
 
                     # get positions of receivers
 
