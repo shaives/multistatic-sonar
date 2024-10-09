@@ -523,7 +523,7 @@ if __name__ == '__main__':
 
 				model.solve()
 
-				if (model.solution.get_status_string() != 'Integer infeasible'):
+				if (model.solution.get_status_string() != 'integer infeasible'):
 
 					obj = model.solution.get_objective_value()
 					#print(f"Solution value = {obj}")
