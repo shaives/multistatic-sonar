@@ -158,11 +158,13 @@ if __name__ == '__main__':
                 if sum < min:
                     min = sum
 
-            for tar_x, tar_y, tar_z in ocean:
-                for theta in range(0,180,instance.STEPS): # target angle
-                    for rx_x, rx_y, rx_z in ocean_surface:
+    if instance.BOUND == 1:
+            
+        for tar_x, tar_y, tar_z in ocean:
+            for theta in range(0,180,instance.STEPS): # target angle
+                for rx_x, rx_y, rx_z in ocean_surface:
 
-                        detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
+                    detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
 
 
     detection_prob_rowsum_s = {}
