@@ -14,7 +14,7 @@ R = 1 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deplo
 rho_0 = 2 # range of the day (in pixels)
 rb = 1 # pulse length (for direct-blast-effect) (in pixels)
 
-CC = 0 # cookie cutter model (1), or probabilistic model (0)
+CC = 1 # cookie cutter model (1), or probabilistic model (0)
 
 dp = 0.95 # desired minimum detection probability per area; only relevant for probabilistic model
 pmax = 0.95 # maximum detection probability for single sender/receiver pair (remark: never set probability to 1, because of taking the log); only relevant for probabilistic model
@@ -33,9 +33,8 @@ USERCUTS = 0 # 0=no user cuts, 1=user cuts on
 
 USERCUTSTRENGTH = 1.0 # how deep must user cuts be to be separated?
 
-
-HEURISTIC = 10 # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC = 100 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
-TIMELIMIT = 360 # time limit in seconds
+TIMELIMIT = 3600 # time limit in seconds
