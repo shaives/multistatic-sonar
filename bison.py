@@ -388,7 +388,7 @@ if __name__ == '__main__':
                 model.write(outdir+"/bison.lp")
 
                 # get positions of sources
-                print(f"Try to solve 0")
+
                 model.solve()
 
                 obj = model.solution.get_objective_value()
@@ -498,10 +498,10 @@ if __name__ == '__main__':
                 model.write(outdir+"/bison.lp")
 
                 # get positions of sources
-                print(f"Try to solve 1")
+
                 model.solve()
 
-                if (model.solution.get_status_string() != 'Integer infeasible'):
+                if (model.solution.get_status_string() != 'integer infeasible'):
 
                     obj = model.solution.get_objective_value()
                     #print(f"Solution value = {obj}")
@@ -629,7 +629,7 @@ if __name__ == '__main__':
         #print(f"best receivers {best_receivers}")
         #print(f"best sources {best_sources}")
 
-        for (rx_x, rx_y, rx_z) in ocean:
+        for (rx_x, rx_y, rx_z) in ocean_surface:
             if (rx_x, rx_y, rx_z) in best_receivers:
                 model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],1)
                 model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
@@ -637,7 +637,7 @@ if __name__ == '__main__':
                 model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
                 model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],0)
 
-        for (tx_x, tx_y, tx_z) in ocean:
+        for (tx_x, tx_y, tx_z) in ocean_surface:
                     if (tx_x, tx_y, tx_z) in best_sources:
                         model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],1)
                         model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
@@ -650,11 +650,11 @@ if __name__ == '__main__':
 
         # free everything
 
-        for (tx_x, tx_y, tx_z) in ocean:
+        for (tx_x, tx_y, tx_z) in ocean_surface:
                     model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
                     model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
 
-        for (rx_x, rx_y, rx_z) in ocean:
+        for (rx_x, rx_y, rx_z) in ocean_surface:
                     model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
                     model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
@@ -767,12 +767,12 @@ if __name__ == '__main__':
     # ---------------------------------------------------
 
     print(f"Source locations:")
-    for tx_x, tx_y, tx_z in ocean:
+    for tx_x, tx_y, tx_z in ocean_surface:
         if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
             print(f"  ({tx_x}, {tx_y})")
 
     print(f"Receiver locations:")
-    for rx_x, rx_y, rx_z in ocean:
+    for rx_x, rx_y, rx_z in ocean_surface:
         if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
             print(f"  ({rx_x}, {rx_y})")
 
@@ -795,7 +795,7 @@ if __name__ == '__main__':
 
     file.write("rx ry\n")
 
-    for rx_x, rx_y, rx_z in ocean:
+    for rx_x, rx_y, rx_z in ocean_surface:
         if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
             file.write(str(rx_x)+" "+str(rx_y)+"\n")
 
@@ -805,7 +805,7 @@ if __name__ == '__main__':
 
     file.write("sx sy\n")
 
-    for tx_x, tx_y, tx_z in ocean:
+    for tx_x, tx_y, tx_z in ocean_surface:
         if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
             file.write(str(tx_x)+" "+str(tx_y)+"\n")
 
