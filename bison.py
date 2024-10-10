@@ -507,7 +507,7 @@ if __name__ == '__main__':
                     #print(f"Solution value = {obj}")
 
                     fixed_receivers = {}
-                    for (rx_x, rx_y, rx_z) in ocean:
+                    for (rx_x, rx_y, rx_z) in ocean_surface:
                         if model.solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
                             #print(f"got one receiver at {rx} {ry}")
                             fixed_receivers[rx_x, rx_y, rx_z] = 1
@@ -593,7 +593,7 @@ if __name__ == '__main__':
                             model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
                             model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],0)
 
-                    for (tx_x, tx_y, tx_z) in ocean:
+                    for (tx_x, tx_y, tx_z) in ocean_surface:
                         model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
                         model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
 
