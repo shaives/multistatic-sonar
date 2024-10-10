@@ -8,11 +8,11 @@ Y = 10 # number of pixels in y-direction
 
 GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
-S = 3 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
+S = 4 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
 R = 12 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
-rho_0 = 2 # range of the day (in pixels)
-rb = 1 # pulse length (for direct-blast-effect) (in pixels)
+rho_0 = 16 # range of the day (in pixels)
+rb = 0.6 # pulse length (for direct-blast-effect) (in pixels)
 
 dp = 0.95 # desired minimum detection probability per area; only relevant for probabilistic model
 pmax = 0.95 # maximum detection probability for single sender/receiver pair (remark: never set probability to 1, because of taking the log); only relevant for probabilistic model
