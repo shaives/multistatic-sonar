@@ -469,7 +469,7 @@ if __name__ == '__main__':
                     fixed_sources = {}
 
                     while len(fixed_sources) < number_of_sources:
-                        tx_x, tx_y, tx_z = random.choice(list(ocean.keys()))
+                        tx_x, tx_y, tx_z = random.choice(list(ocean_surface.keys()))
 
                         if (tx_x, tx_y, tx_z) not in fixed_sources:
                             fixed_sources[tx_x, tx_y, tx_z] = 1
@@ -535,7 +535,7 @@ if __name__ == '__main__':
                     fixed_sources = {}
 
                     while len(fixed_sources) < instance.S:
-                        tx_x, tx_y, tx_z = random.choice(list(ocean.keys()))
+                        tx_x, tx_y, tx_z = random.choice(list(ocean_surface.keys()))
 
                         if (tx_x, tx_y, tx_z) not in fixed_sources:
                             fixed_sources[tx_x, tx_y, tx_z] = 1
