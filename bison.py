@@ -780,12 +780,12 @@ if __name__ == '__main__':
         print(f"Covered ocean pixels:")
         for tar_x, tar_y, tar_z in ocean:
             if solution.get_values(c[tar_x, tar_y, tar_z]) > 0.999:
-                print(f"  ({tar_x}, {tar_y})")
+                print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
         print(f"Not covered ocean pixels:")
         for tar_x, tar_y, tar_z in ocean:
             if solution.get_values(c[tar_x, tar_y, tar_z]) < 0.001:
-                print(f"  ({tar_x}, {tar_y})")
+                print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
     # ---------------------------------------------------
     # --- output solution to files
@@ -904,7 +904,7 @@ if __name__ == '__main__':
 
     print(f"The total time spent is {(time.time()-start_time):.0f} seconds")
 
-    print(f"Output written to '{color.RED + outdir + color.END}'")
+    print(f"Output written to '{outdir}'")
 
     print(f"This is the end, my only friend, the end...")
 
