@@ -155,7 +155,7 @@ def check_line(x1, y1, z1, x2, y2, z2, ocean):
 
 def reading_in_ocean_data(instance):
 
-    print(f"reading '{instance.DIR} + {instance.INPUT}'")
+    print(f"reading '{instance.DIR + instance.INPUT}'")
 
     file = open(instance.DIR + "/" + instance.INPUT, "r")
     elevation_data = file.read()
