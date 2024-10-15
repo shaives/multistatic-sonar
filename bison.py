@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # creating an output directory and copy config file
     if not os.path.exists('outputs'):
         os.mkdir('outputs')
-    outdir = 'outputs/' + filename+ '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') 
+    outdir = 'outputs/' + filename + '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') 
     os.mkdir(outdir)
     shutil.copy2("./cfg/" + filename + ".py", outdir)
 
