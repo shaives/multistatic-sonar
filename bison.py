@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # creating an output directory and copy config file
     if not os.path.exists('outputs'):
         os.mkdir('outputs')
-    outdir = 'outputs/' + filename + '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') 
+    outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
     os.mkdir(outdir)
     shutil.copy2("./cfg/" + filename + ".py", outdir)
 
@@ -854,16 +854,16 @@ if __name__ == '__main__':
     file.write("	grid=major,\n")
     file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
 
-    for i in range(0,instance.X):
-        for j in range(0,instance.Y):
-            if map[i][j] < 0.0:
-                val = int(30 + 70 * map[i][j] / min_depth)
-                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-                file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
+    for x in range(0,instance.X):
+        for y in range(0,instance.Y):
+            if map[x,y] < 0.0:
+                val = int(30 + 70 * map[x,y] / min_depth)
+                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
             else:
-                val = int(30 + 70 * map[i][j] / max_depth)
-                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-                file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
+                val = int(30 + 70 * map[x,y] / max_depth)
+                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,j]))+"};\n")
 
     if instance.GOAL == 1: # goal: maximize coverage
         for tar_x, tar_y, tar_z in ocean:
