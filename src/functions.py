@@ -190,8 +190,6 @@ def reading_in_ocean_data(instance):
         # for each line in the data
         for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
             
-            line_dict = {}
-            
             # for each element in the line
             for x, element in enumerate(re.split("\s+", line_str)[:instance.X]):
 
@@ -218,10 +216,8 @@ def reading_in_ocean_data(instance):
 
                             max_depth = element
 
-                        line_dict[x] = element
+                        map[x,y] = element
 
-            if z == 0:
-                map[y] = line_dict
 
     return map, ocean, ocean_surface, min_depth, max_depth
 
