@@ -1,7 +1,7 @@
 DIR = "Instances/EnglishChannel/" # directory where to find input and store output files
 INPUT = "GMRTv3_3_20170610topo.asc" # file name of ocean floor data
 
-RAM = 8192	# 0=use disk, 1=use RAM for storing data
+RAM = 4*8192	# 0=use disk, 1=use RAM for storing data
 
 X = 16 # number of pixels in x-direction
 Y = 10 # number of pixels in y-direction

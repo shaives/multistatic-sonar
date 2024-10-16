@@ -1,12 +1,12 @@
 DIR = "Instances/MontereyPeninsular/" # directory where to find input and store output files
 INPUT = "GMRTv3_3_20170309topo.asc" # file name of ocean floor data
 
-RAM = 8192	# 0=use disk, 1=use RAM for storing data
+RAM = 8*8192	# 0=use disk, 1=use RAM for storing data
 
 X = 10 # number of pixels in x-direction
 Y = 10 # number of pixels in y-direction
 
-GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
+GOAL = 0 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
 S = 12 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
 R = 4 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
