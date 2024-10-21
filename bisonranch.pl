@@ -552,29 +552,25 @@ foreach $instance (sort keys %INSTANCES) {
     $S = $INSTANCES{$instance}{S}[$GOAL];
     $R = $INSTANCES{$instance}{R}[$GOAL];
     
-    for $CC (0..1) {
-      for $MODELTYPE (0,1,2,3,4,6,7,9,10,12,13) {  # without Rodriguez
-        for $BOUND (0..0) {
-          $restart_mark = "$instance-$GOAL-$CC-$MODELTYPE-$BOUND";
+    for $BOUND (0..0) {
+      $restart_mark = "$instance-$GOAL-$CC-$MODELTYPE-$BOUND";
 
-          #print $restart_mark," vs. ",$restart_at,"\n";
+      #print $restart_mark," vs. ",$restart_at,"\n";
 
-          if ($restart_mark eq $restart_at) {
-            $run = 1;
-          }
-                    
-          if ($run == 1) {
-            print " GOAL = $GOAL, X = $X, Y = $Y, rho0 = $rho0, rb = $rb, CC = $CC, MODELTYPE = $MODELTYPE, BOUND = $BOUND (restart mark: $restart_mark)\n";
-          
-            # do it
-          
-            open (OUT, ">$instance.py") or die "can't create '$instance.py'\n";
-            
-            print OUT "
+      if ($restart_mark eq $restart_at) {
+        $run = 1;
+      }
+                
+      if ($run == 1) {
+        print " GOAL = $GOAL, X = $X, Y = $Y, rho0 = $rho0, rb = $rb, CC = $CC, MODELTYPE = $MODELTYPE, BOUND = $BOUND (restart mark: $restart_mark)\n";
+      
+        # do it
+      
+        open (OUT, ">$instance.py") or die "can't create '$instance.py'\n";
+        
+        print OUT "
 DIR = \"Instances/$instance/\" # directory where to find input and store output files
-
 INPUT = \"$data\" # file name of ocean floor data
-OUTPUT = \"$instance\" # name of output file (a time stamp will be added in front of this)
 
 X = $X # number of pixels in x-direction
 Y = $Y # number of pixels in y-direction
@@ -587,108 +583,70 @@ R = $R # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of depl
 rho_0 = $rho0 # range of the day (in pixels)
 rb = $rb # pulse length (for direct-blast-effect) (in pixels)
 
-CC = $CC # cookie cutter model (1), or probabilistic model (0)
-
-dp = 0.95 # desired minimum detection probability per area; only relevant for probabilistic model
-pmax = 0.95 # maximum detection probability for single sender/receiver pair (remark: never set probability to 1, because of taking the log); only relevant for probabilistic model
-pmin = 0.1 # minimum detection probability for single sender/receiver pair; only relevant for probabilistic model
-b1 = 0.2 # parameter to describe how fast the detection probability decays at the outer (range) boundary; only relevant for probabilistic model
-b2 = 0.1 # parameter to describe how fast the detection probability decays at the inner (direct blast) boundary; only relevant for probabilistic model
-";
-
-if ($MODELTYPE == 15) {
-  print OUT "BOUND = 0 # for models 3-14: 0=individual bound per row, 1=min/max over all rows
-
-USERCUTS = $BOUND # 0=no user cuts, 1=user cuts on
-";
-}
-else {
-  print OUT "BOUND = $BOUND # for models 3-14: 0=individual bound per row, 1=min/max over all rows
+BOUND = $BOUND # for models 3-14: 0=individual bound per row, 1=min/max over all rows
 
 USERCUTS = 0 # 0=no user cuts, 1=user cuts on
-";
-}
 
-print OUT "
 USERCUTSTRENGTH = 1.0 # how deep must user cuts be to be separated?
-
-MODELTYPE = $MODELTYPE # select model type: 
-  # 0=MINLP/let cplex do the job 
-  # 1=Fortet (1959), Dantzig (1960), Balas (1964), Zangwill (1965), Watters (1967) 
-  # 2=Glover, Woolsey (1974) 
-  # 3=Glover (1975) for receivers
-  # 4=Glover (1975) for sources
-  # 5=Glover (1975) for sources&receivers 
-  # 6=1st Oral-Kettani (1992) for receivers
-  # 7=1st Oral-Kettani (1992) for sources 
-  # 8=1st Oral-Kettani (1992) for sources&receivers 
-  # 9=2nd Oral-Kettani (1992) for receivers
-  # 10=2nd Oral-Kettani (1992) for sources
-  # 11=2nd Oral-Kettani (1992) for sources&receivers
-  # 12=Chaovalitwongse, Pardalos, Prokopyev (2004) for receivers
-  # 13=Chaovalitwongse, Pardalos, Prokopyev (2004) for sources
-  # 14=Chaovalitwongse, Pardalos, Prokopyev (2004) for sources&receivers
-  # 15=Rodrigues et al. (2014) 
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
 TIMELIMIT = 10000 # time limit in seconds
 ";
             
-            close (OUT);
-            
-            # solve it
-            
-            $OS = `./bison.py $instance`;
-            
-            #print $OS;
-            
-            $OS =~ /number of ocean pixels: (.*)\n/;
-            $pxl = $1 + 0;
-            
-            $OS =~ /sec to get (.*) detection triples/;
-            $trpl = $1 + 0;
-            
-            $OS =~ /it took (.*) sec to solve/;
-            $soltime = $1 + 0;
-            
-            if ($OS =~ /No solution available/) {
-              $stat = "---";
-              $pval = "---";
-            }
-            
-            if ($OS =~ /MIP optimal/ or $OS =~ /MIP time limit feasible/) {
-              $stat = "feas";
-              
-              $OS =~ /Solution value = (.*)\n/;
-              $pval = $1 + 0;
-            }
-            
-            if ($OS =~ /Best bound = (.*)\n/) {
-              $dval = $1 + 0;
-            }
-            
-            if ($OS =~ /MIP gap = (.*)\n/) {
-              $gap = $1;
-            }
-            
-            # append to log
-            
-            open (LOG, ">>bisonranch.log") or die "can't create 'bisonranch.log'\n";
+        close (OUT);
+        
+        # solve it
+        
+        $OS = `./bison.py $instance`;
+        
+        #print $OS;
+        
+        $OS =~ /number of ocean pixels: (.*)\n/;
+        $pxl = $1 + 0;
+        
+        $OS =~ /sec to get (.*) detection triples/;
+        $trpl = $1 + 0;
+        
+        $OS =~ /it took (.*) sec to solve/;
+        $soltime = $1 + 0;
+        
+        if ($OS =~ /No solution available/) {
+          $stat = "---";
+          $pval = "---";
+        }
+        
+        if ($OS =~ /MIP optimal/ or $OS =~ /MIP time limit feasible/) {
+          $stat = "feas";
+          
+          $OS =~ /Solution value = (.*)\n/;
+          $pval = $1 + 0;
+        }
+        
+        if ($OS =~ /Best bound = (.*)\n/) {
+          $dval = $1 + 0;
+        }
+        
+        if ($OS =~ /MIP gap = (.*)\n/) {
+          $gap = $1;
+        }
+        
+        # append to log
+        
+        open (LOG, ">>bisonranch.log") or die "can't create 'bisonranch.log'\n";
 
-            print LOG "$instance\t$X\t$Y\t$rho0\t$rb\t$GOAL\t$CC\t$MODELTYPE\t$BOUND\t$pxl\t$trpl\t$soltime\t$stat\t$pval\t$dval\t$gap\n";
-            close (LOG);
-            
-            
-            if ($MODELTYPE <=2) { # no bound change for some models
-              last;
-            }
-          }
+        print LOG "$instance\t$X\t$Y\t$rho0\t$rb\t$GOAL\t$CC\t$MODELTYPE\t$BOUND\t$pxl\t$trpl\t$soltime\t$stat\t$pval\t$dval\t$gap\n";
+        close (LOG);
+        
+        
+        if ($MODELTYPE <=2) { # no bound change for some models
+          last;
         }
       }
     }
   }
 }
+
 
 
 

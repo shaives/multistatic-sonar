@@ -31,910 +31,879 @@ from src.classes import *
 
 if __name__ == '__main__':
 
-	try:
-
-		filename = sys.argv[1]
-
-		filepath = os.path.join("cfg", filename + '.py')
-
-		if os.path.isfile(filepath):
-
-			instance = importlib.import_module("cfg." + filename)
-			start_time = time.time()
-
-	except IndexError:
-
-		print("File not found in the 'cfg' folder.")
-	
-	# creating an output directory and copy config file
-	if not os.path.exists('outputs'):
-		os.mkdir('outputs')
-	outdir = 'outputs/' + filename+ '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') 
-	os.mkdir(outdir)
-	shutil.copy2("./cfg/" + filename + ".py", outdir)
-
-	# redirect output to screen and logfile
-	sys.stdout = Logger(outdir) 
-
-	print(f"BISON - "+color.BOLD+"BI"+color.END+"static "+color.BOLD+"S"+color.END+"onar "+color.BOLD+"O"+color.END+"ptimizatio"+color.BOLD+"N"+color.END)
-	print(f"")
-	print(f"                                                                                           ")
-	print(f"                                   @@@@@@@@@                                               ")
-	print(f"                               @@@@         @@@@                                           ")
-	print(f"                            @@@                 @@@                                        ")
-	print(f"                         @@@                       @@@@                                    ")
-	print(f"                       @@                             @@@@@                                ")
-	print(f"                     @@@                                   @@@@                            ")
-	print(f"                   @@@                                         @@@@                        ")
-	print(f"         @@@@@@@@@@                                                @@@@                    ")
-	print(f"     @@@@                                   @                          @@@@@               ")
-	print(f"   @@                                       @@                              @@@@@@         ")
-	print(f"  @@           @                              @@                              @@@@@        ")
-	print(f" @@            @@                              @                                 @@@@      ")
-	print(f" @            @ @                               @                                  @@@     ")
-	print(f" @            @ @                               @                                    @@    ")
-	print(f" @          @@@ @@                             @@                                   @  @   ")
-	print(f"@@            @@@                             @                                     @@  @  ")
-	print(f" @@                                           @@               @@                   @@@ @@ ")
-	print(f"  @                                         @@                   @                  @ @@@@ ")
-	print(f"   @@         @                             @                     @@                @ @ @@ ")
-	print(f"     @@    @@@                               @                     @@              @@ @ @  ")
-	print(f"      @@                                     @@                 @@@  @             @ @@@@  ")
-	print(f"        @                                    @@               @@     @@@          @@ @  @@ ")
-	print(f"        @                                     @@     @@@@@@@@@     @@   @@@@        @@   @@")
-	print(f"         @                 @                  @@@@@@@       @     @         @@@       @   @")
-	print(f"          @@@@@@@@@        @@                @@             @     @            @      @@ @ ")
-	print(f"                   @@@   @@  @              @               @    @              @@    @@   ")
-	print(f"                      @  @    @            @               @    @                @@   @@   ")
-	print(f"                       @@      @@          @             @@    @                 @@   @@   ")
-	print(f"                       @@       @@    @@@@@            @@@   @@                  @@   @@   ")
-	print(f"                               @@@  @@@              @@    @@                    @@   @@   ")
-	print(f"                             @@    @@              @@@@@@@@                     @    @@@   ")
-	print(f"                             @@@@@@@@                                          @@@@@@@     ")
-	print(f"")
-	print(f"")
-
-	print(f"Called")
-	
-	# ---------------------------------------------------
-	# --- read ocean elevation data file
-	# ---------------------------------------------------
-
-	map, ocean, min_depth, max_depth = reading_in_ocean_data(instance)
-
-	# ---------------------------------------------------
-	# --- create outputs
-	# ---------------------------------------------------
-
-	# output latex map
-	create_latex_map(instance, map, min_depth, max_depth, outdir)
-
-	# output ocean pixels
-	create_ocean_dat(ocean, outdir)
-
-	# output map
-	create_map_dat(instance, map, outdir)
-
-	# plot function g
-	create_plot_func_g(instance, outdir)
+    try:
+
+        filename = sys.argv[1]
+
+        filepath = os.path.join("cfg", filename + '.py')
+
+        if os.path.isfile(filepath):
+
+            instance = importlib.import_module("cfg." + filename)
+            start_time = time.time()
+
+    except IndexError:
+
+        print("File not found in the 'cfg' folder.")
+    
+    # creating an output directory and copy config file
+    if not os.path.exists('outputs'):
+        os.mkdir('outputs')
+    outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
+    os.mkdir(outdir)
+    shutil.copy2("./cfg/" + filename + ".py", outdir)
+
+    # redirect output to screen and logfile
+    sys.stdout = Logger(outdir) 
+
+    print(f"BISON - "+color.BOLD+"BI"+color.END+"static "+color.BOLD+"S"+color.END+"onar "+color.BOLD+"O"+color.END+"ptimizatio"+color.BOLD+"N"+color.END)
+    print(f"")
+    print(f"                                                                                           ")
+    print(f"                                   @@@@@@@@@                                               ")
+    print(f"                               @@@@         @@@@                                           ")
+    print(f"                            @@@                 @@@                                        ")
+    print(f"                         @@@                       @@@@                                    ")
+    print(f"                       @@                             @@@@@                                ")
+    print(f"                     @@@                                   @@@@                            ")
+    print(f"                   @@@                                         @@@@                        ")
+    print(f"         @@@@@@@@@@                                                @@@@                    ")
+    print(f"     @@@@                                   @                          @@@@@               ")
+    print(f"   @@                                       @@                              @@@@@@         ")
+    print(f"  @@           @                              @@                              @@@@@        ")
+    print(f" @@            @@                              @                                 @@@@      ")
+    print(f" @            @ @                               @                                  @@@     ")
+    print(f" @            @ @                               @                                    @@    ")
+    print(f" @          @@@ @@                             @@                                   @  @   ")
+    print(f"@@            @@@                             @                                     @@  @  ")
+    print(f" @@                                           @@               @@                   @@@ @@ ")
+    print(f"  @                                         @@                   @                  @ @@@@ ")
+    print(f"   @@         @                             @                     @@                @ @ @@ ")
+    print(f"     @@    @@@                               @                     @@              @@ @ @  ")
+    print(f"      @@                                     @@                 @@@  @             @ @@@@  ")
+    print(f"        @                                    @@               @@     @@@          @@ @  @@ ")
+    print(f"        @                                     @@     @@@@@@@@@     @@   @@@@        @@   @@")
+    print(f"         @                 @                  @@@@@@@       @     @         @@@       @   @")
+    print(f"          @@@@@@@@@        @@                @@             @     @            @      @@ @ ")
+    print(f"                   @@@   @@  @              @               @    @              @@    @@   ")
+    print(f"                      @  @    @            @               @    @                @@   @@   ")
+    print(f"                       @@      @@          @             @@    @                 @@   @@   ")
+    print(f"                       @@       @@    @@@@@            @@@   @@                  @@   @@   ")
+    print(f"                               @@@  @@@              @@    @@                    @@   @@   ")
+    print(f"                             @@    @@              @@@@@@@@                     @    @@@   ")
+    print(f"                             @@@@@@@@                                          @@@@@@@     ")
+    print(f"")
+    print(f"")
+
+    print(f"Called")
+    
+    # ---------------------------------------------------
+    # --- read ocean elevation data file
+    # ---------------------------------------------------
 
-	# ---------------------------------------------------
-	# --- compute model
-	# ---------------------------------------------------
+    map, ocean, ocean_surface, min_depth, max_depth = reading_in_ocean_data(instance)
 
-	# compute coverage
+    # ---------------------------------------------------
+    # --- create outputs
+    # ---------------------------------------------------
 
-	detection_prob = compute_coverage_triples(instance, map, ocean)
+    # output latex map
+    create_latex_map(instance, map, min_depth, max_depth, outdir)
 
-	if len(instance.TS) == 0:
-		instance.STEPS = 180
+    # output ocean pixels
+    create_ocean_dat(ocean, outdir)
 
-	# computing the rowsum in detection_prob
+    # output map
+    create_map_dat(instance, map, outdir)
 
-	print(f"Computing detection prob")
+    # plot function g
+    create_plot_func_g(instance, outdir)
 
-	# should we maybe go only with one varient???
+    # ---------------------------------------------------
+    # --- compute model
+    # ---------------------------------------------------
 
-	start_time_prob = time.time()
+    # compute coverage
 
-	detection_prob_rowsum_r = {}
+    detection_prob = compute_coverage_triples(instance, ocean, ocean_surface)
 
-	max = -10e+10
-	min = 10e+10
+    if len(instance.TS) == 0:
+        instance.STEPS = 180
 
-	for tar_x,tar_y in ocean:
-		for theta in range(0,180,instance.STEPS): # target angle
-			for rx_x,rx_y in ocean:
-				sum = 0
-				for tx_x,tx_y in ocean:
-					if (tar_x, tar_y, theta, tx_x, tx_y, rx_x, rx_y) in detection_prob:
-						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+    # computing the rowsum in detection_prob
 
-				detection_prob_rowsum_r[tar_x, tar_y, theta, rx_x, rx_y] = sum
+    print(f"Computing detection prob")
 
-				if sum > max:
-					max = sum
-				if sum < min:
-					min = sum
+    # should we maybe go only with one varient???
 
-	if instance.BOUND == 1:
-		if instance.CC == 0: # probabilistic model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for rx_x,rx_y in ocean:
+    start_time_prob = time.time()
 
-						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = min
+    detection_prob_rowsum_r = {}
 
-		else: # cookie-cutter model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for rx_x,rx_y in ocean:
+    max = -10e+10
+    min = 10e+10
 
-						detection_prob_rowsum_r[tar_x,tar_y,theta,rx_x,rx_y] = max
+    for tar_x, tar_y, tar_z in ocean:
+        for theta in range(0,180,instance.STEPS): # target angle
+            for rx_x, rx_y, rx_z in ocean_surface:
+                sum = 0
+                for tx_x, tx_y, tx_z in ocean_surface:
 
+                    if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-	detection_prob_rowsum_s = {}
+                detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = sum
 
-	for tar_x,tar_y in ocean:
-		for theta in range(0,180,instance.STEPS): # target angle
-			for tx_x,tx_y in ocean:
-				sum = 0
-				for rx_x,rx_y in ocean:
-					if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
-						sum = sum + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+                if sum > max:
+                    max = sum
+                if sum < min:
+                    min = sum
 
-				detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = sum
+    if instance.BOUND == 1:
+            
+        for tar_x, tar_y, tar_z in ocean:
+            for theta in range(0,180,instance.STEPS): # target angle
+                for rx_x, rx_y, rx_z in ocean_surface:
 
-				if sum > max:
-					max = sum
-				if sum < min:
-					min = sum
+                    detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
 
-	if instance.BOUND == 1:
-		if instance.CC == 0: # probabilistic model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for tx_x,tx_y in ocean:
 
-						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = min
+    detection_prob_rowsum_s = {}
 
-		else: # cookie-cutter model
-			for tar_x,tar_y in ocean:
-				for theta in range(0,180,instance.STEPS): # target angle
-					for tx_x,tx_y in ocean:
+    for tar_x, tar_y, tar_z in ocean:
+        for theta in range(0,180,instance.STEPS): # target angle
+            for tx_x, tx_y, tx_z in ocean_surface:
+                sum = 0
+                for rx_x, rx_y, rx_z in ocean_surface:
+                    if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-						detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y] = max
+                detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = sum
 
-	end_time_prob = time.time()
+                if sum > max:
+                    max = sum
+                if sum < min:
+                    min = sum
 
-	print(f"It took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
+    if instance.BOUND == 1:
+        for tar_x, tar_y, tar_z in ocean:
+            for theta in range(0,180,instance.STEPS): # target angle
+                for tx_x, tx_y, tx_z in ocean_surface:
 
-	# ---------------------------------------------------
-	# --- set up optimization model
-	# ---------------------------------------------------
+                    detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = max
 
-	model = cplex.Cplex()
+    end_time_prob = time.time()
 
-	print(f"IBM ILOG CPLEX version number: {model.get_version()}")
+    print(f"It took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
-	# VARIABLES
+    # ---------------------------------------------------
+    # --- set up optimization model
+    # ---------------------------------------------------
 
-	s = {} # sources, =1, if a source is located on candidate location tx_x,tx_y
-	r = {} # receivers, =1, if a receiver is located on candidate location tx_x,tx_y
+    model = cplex.Cplex()
 
-	for tx_x,tx_y in ocean:
-		s[tx_x,tx_y] = "s#"+str(tx_x)+"#"+str(tx_y)
-		r[tx_x,tx_y] = "r#"+str(tx_x)+"#"+str(tx_y)
+    print(f"IBM ILOG CPLEX version number: {model.get_version()}")
 
-		if instance.GOAL == 0: # optimization goal: cover all pixels, minimize deployment cost
-			model.variables.add(obj = [instance.S], names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
-			model.variables.add(obj = [instance.R], names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
-		else: # deploy equipment, maximize coverage
-			model.variables.add(names = [s[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
-			model.variables.add(names = [r[tx_x,tx_y]], lb = [0], ub = [1], types = ["B"])
+    # VARIABLES
 
-	if instance.GOAL == 1: # deploy equipment, maximize coverage
-		c = {} # coverage, =1, if some source-receiver pair covers location tar_x,tar_y
+    s = {} # sources, =1, if a source is located on candidate location tx_x, tx_y, tx_z
+    r = {} # receivers, =1, if a receiver is located on candidate location tx_x, tx_y, tx_z
 
-		percentage = float("{0:.3f}".format(100.0/len(ocean)))
+    for tx_x, tx_y, tx_z in ocean_surface:
+        
+        s[tx_x, tx_y, tx_z] = "s#"+str(tx_x)+"#"+str(tx_y)+"#"+str(tx_z)
+        r[tx_x, tx_y, tx_z] = "r#"+str(tx_x)+"#"+str(tx_y)+"#"+str(tx_z)
 
-		for tar_x, tar_y in ocean:
-			c[tar_x,tar_y] = "c#"+str(tar_x)+"#"+str(tar_y)
-			model.variables.add(obj = [percentage], names = [c[tar_x,tar_y]], lb = [0], ub = [1], types = ["B"])
+        if instance.GOAL == 0: # optimization goal: cover all pixels, minimize deployment cost
+            model.variables.add(obj = [instance.S], names = [s[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
+            model.variables.add(obj = [instance.R], names = [r[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
+        else: # deploy equipment, maximize coverage
+            model.variables.add(names = [s[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
+            model.variables.add(names = [r[tx_x, tx_y, tx_z]], lb = [0], ub = [1], types = ["B"])
 
-	y = {}
+    if instance.GOAL == 1: # deploy equipment, maximize coverage
+        c = {} # coverage, =1, if some source-receiver pair covers location tar_x, tar_y, tar_z
 
-	for tar_x,tar_y,theta,tx_x,tx_y in detection_prob_rowsum_s:
-		y[tar_x,tar_y,theta,tx_x,tx_y] = "y#"+str(tar_x)+"#"+str(tar_y)+"#"+str(theta)+"#"+str(tx_x)+"#"+str(tx_y)
+        percentage = float("{0:.3f}".format(100.0/len(ocean)))
 
-		if instance.CC == 0: # probabilistic model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], lb = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], ub = [0], types = ["C"])
-		else: # cookie-cutter model
-			model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["C"])
+        for tar_x, tar_y, tar_z in ocean:
+            c[tar_x, tar_y, tar_z] = "c#"+str(tar_x)+"#"+str(tar_y)+"#"+str(tar_z)
+            model.variables.add(obj = [percentage], names = [c[tar_x, tar_y, tar_z]], lb = [0], ub = [1], types = ["B"])
 
-			# TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
-			#model.variables.add(names = [y[tar_x,tar_y,theta,tx_x,tx_y]], ub = [detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]], lb = [0], types = ["I"])
+    y = {}
 
-	# CONSTRAINTS
+    for tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z in detection_prob_rowsum_s:
+        y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = "y#"+str(tar_x)+"#"+str(tar_y)+"#"+str(tar_z)+"#"+str(theta)+"#"+str(tx_x)+"#"+str(tx_y)+"#"+str(tx_z)
 
-	# probabilistic models
+        model.variables.add(names = [y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z]], ub = [detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z]], lb = [0], types = ["C"])
 
-	if instance.GOAL == 1:
-		# for all models below, if the goal is to 'deploy equipment, maximize coverage', then here the equipment gets fixed
+        # TODO: Setting y to general integer seems to help for cookie-cutter. Perform a deeper analysis of this initial observation
+        #model.variables.add(names = [y[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z]], ub = [detection_prob_rowsum_s[tar_x, tar_y, tar_z,theta,tx_x, tx_y, tx_z]], lb = [0], types = ["I"])
 
-		thevars = []
-		thecoefs = []
+    # CONSTRAINTS
 
-		for tx_x,tx_y in ocean:
-			thevars.append(s[tx_x,tx_y])
-			thecoefs.append(1.0)
+    if instance.GOAL == 1:
+        # for all models below, if the goal is to 'deploy equipment, maximize coverage', then here the equipment gets fixed
 
-		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.S])
+        thevars = []
+        thecoefs = []
 
-		thevars = []
-		thecoefs = []
+        for tx_x, tx_y, tx_z in ocean_surface:
 
-		for rx_x,rx_y in ocean:
-			thevars.append(r[rx_x,rx_y])
-			thecoefs.append(1.0)
+            thevars.append(s[tx_x, tx_y, tx_z])
+            thecoefs.append(1.0)
 
-		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.R])
+        model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.S])
 
-	else: # GOAL = 0
-		# for all models below, if the goal is to 'minimize equipment', then at least one source and one receiver have to be deployed
+        thevars = []
+        thecoefs = []
 
-		thevars = []
-		thecoefs = []
+        for rx_x, rx_y, rx_z in ocean_surface:
 
-		for tx_x,tx_y in ocean:
-			thevars.append(s[tx_x,tx_y])
-			thecoefs.append(1.0)
+            thevars.append(r[rx_x, rx_y, rx_z])
+            thecoefs.append(1.0)
 
-		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
+        model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [instance.R])
 
-		thevars = []
-		thecoefs = []
+    else: # GOAL = 0
+        # for all models below, if the goal is to 'minimize equipment', then at least one source and one receiver have to be deployed
 
-		for rx_x,rx_y in ocean:
-			thevars.append(r[rx_x,rx_y])
-			thecoefs.append(1.0)
+        thevars = []
+        thecoefs = []
 
-		model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
+        for tx_x, tx_y, tx_z in ocean_surface:
 
-	# 1st linearization from Oral, Kettani (1992) for senders
+            thevars.append(s[tx_x, tx_y, tx_z])
+            thecoefs.append(1.0)
 
-	# coverage for each ocean pixel
-	
-	for tar_x,tar_y in ocean:
-		for theta in range(0,180,instance.STEPS): # target angle
-			thevars = []
-			thecoefs = []
-			
-			for tx_x,tx_y in ocean:
-				thevars.append(s[tx_x,tx_y])
-				thevars.append(y[tar_x,tar_y,theta,tx_x,tx_y])
-				thecoefs.append(detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y])
-				thecoefs.append(-1.0)
+        model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
 
-			if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
-				thevars.append(c[tar_x,tar_y])
-				if instance.CC == 0: # probabilistic model
-					thecoefs.append(-log(1-instance.dp))
-				else: # cookie-cutter model
-					thecoefs.append(-1.0)
-					
-			if instance.CC == 0: # probabilistic model
-				if instance.GOAL == 0: # goal: cover all pixels
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [log(1-instance.dp)])
-				else: # goal: deploy equipment
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-			else: # cookie-cutter model
-				if instance.GOAL == 0: # goal: cover all pixels
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
-				else: # goal: deploy equipment
-					model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0]) 
-	
-	# linearization constraints
-	
-	for tar_x,tar_y,theta,tx_x,tx_y in detection_prob_rowsum_s:
-		thevars = [y[tar_x,tar_y,theta,tx_x,tx_y],s[tx_x,tx_y]]
-		thecoefs = [1.0,-detection_prob_rowsum_s[tar_x,tar_y,theta,tx_x,tx_y]]
-		
-		for rx_x,rx_y in ocean:
-			if (tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y) in detection_prob:
-				thevars.append(r[rx_x,rx_y])
-				thecoefs.append(detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y])
+        thevars = []
+        thecoefs = []
 
-		if instance.CC == 0: # probabilistic model
-			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["L"], rhs = [0.0])
-		else: # cookie-cutter model
-			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])  
+        for rx_x, rx_y, rx_z in ocean_surface:
 
+            thevars.append(r[rx_x, rx_y, rx_z])
+            thecoefs.append(1.0)
 
+        model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
 
-	if instance.USERCUTS == 1:
-		usercut_cb = model.register_callback(UsercutCallback)
-		usercut_cb.number_of_calls = 0
-		usercut_cb.number_of_cuts_added = 0
-	else:
-		usercut_cb = None
-	# OBJECTIVE FUNCTION
+    # 1st linearization from Oral, Kettani (1992) for senders
 
-	if instance.GOAL == 0: # goal: minimize cost for deployed equipment
-		model.objective.set_sense(model.objective.sense.minimize)
-	else: # goal: maximize coverage
-		model.objective.set_sense(model.objective.sense.maximize)
+    # coverage for each ocean pixel
+    
+    for tar_x, tar_y, tar_z in ocean:
+        for theta in range(0,180,instance.STEPS): # target angle
+            thevars = []
+            thecoefs = []
+            
+            for tx_x, tx_y, tx_z in ocean_surface:
 
-	# set optimization parameters
+                thevars.append(s[tx_x, tx_y, tx_z])
+                thevars.append(y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z])
+                thecoefs.append(detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z])
+                thecoefs.append(-1.0)
 
-	#model.parameters.threads.set(1);   # single core, no parallelism
+            if instance.GOAL == 1: # goal: deploy equipment, maximize coverage
+                thevars.append(c[tar_x, tar_y, tar_z])
+                thecoefs.append(-1.0)
+                    
+            if instance.GOAL == 0: # goal: cover all pixels
+                model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [1.0])
+            else: # goal: deploy equipment
+                model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0]) 
+    
+    # linearization constraints
+    
+    for tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z in detection_prob_rowsum_s:
+        thevars = [y[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z],s[tx_x, tx_y, tx_z]]
+        thecoefs = [1.0,-detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z]]
+        
+        for rx_x, rx_y, rx_z in ocean_surface:
+            if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+                thevars.append(r[rx_x, rx_y, rx_z])
+                thecoefs.append(detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z])
 
-	# HEURISTIC
+        model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["G"], rhs = [0.0])  
 
-	if instance.HEURISTIC > 0:
-		print(f"Running {instance.HEURISTIC} rounds of heuristic")
 
-		model.set_results_stream(None) # turn off messaging to screen
-		model.set_warning_stream(None)
 
-		if instance.GOAL == 0:
-			best_obj = 10**10
+    if instance.USERCUTS == 1:
+        usercut_cb = model.register_callback(UsercutCallback)
+        usercut_cb.number_of_calls = 0
+        usercut_cb.number_of_cuts_added = 0
+    else:
+        usercut_cb = None
 
-			best_sources = []
-			best_receivers = []
+    # OBJECTIVE FUNCTION
 
-			#print(f"----------0-----------")
+    if instance.GOAL == 0: # goal: minimize cost for deployed equipment
+        model.objective.set_sense(model.objective.sense.minimize)
+    else: # goal: maximize coverage
+        model.objective.set_sense(model.objective.sense.maximize)
 
-			# PREQUEL
+    # set optimization parameters
 
-			fixed_receivers = ocean
+    #model.parameters.threads.set(1);   # single core, no parallelism
 
-			old_obj = 10**10
+    # HEURISTIC
 
-			while True:
+    if instance.HEURISTIC > 0:
+        print(f"Running {instance.HEURISTIC} rounds of heuristic")
 
-				# fix the receiver variables of the positions in fixed_receivers to 1, and all others to 0
-				# free the sources
+        model.set_results_stream(None) # turn off messaging to screen
+        model.set_warning_stream(None)
 
-				for (rx,ry) in ocean:
-					if (rx,ry) in fixed_receivers:
-						model.variables.set_lower_bounds(r[rx,ry],1)
-						model.variables.set_upper_bounds(r[rx,ry],1)
-					else:
-						model.variables.set_lower_bounds(r[rx,ry],0)
-						model.variables.set_upper_bounds(r[rx,ry],0)
+        if instance.GOAL == 0:
+            best_obj = 10**10
 
-				for (sx,sy) in ocean:
-					model.variables.set_lower_bounds(s[sx,sy],0)
-					model.variables.set_upper_bounds(s[sx,sy],1)
+            best_sources = []
+            best_receivers = []
 
-				#model.write(outdir+"/bison.lp")
+            #print(f"----------0-----------")
 
-				# get positions of sources
+            # PREQUEL
 
-				model.solve()
+            fixed_receivers = ocean_surface
 
-				obj = model.solution.get_objective_value()
-				#print(f"Solution value = {obj}")
+            old_obj = 10**10
 
-				fixed_sources = {}
+            while True:
 
-				for (sx,sy) in ocean:
-					if model.solution.get_values(s[sx,sy]) > 0.999:
-						#print(f"got one source at {sx} {sy}")
-						fixed_sources[sx,sy] = 1
+                # fix the receiver variables of the positions in fixed_receivers to 1, and all others to 0
+                # free the sources
 
-				# fix the source variables of the positions in fixed_sources to 1, and all others to 0
-				# free the receiver variables again
+                for (rx_x, rx_y, rx_z) in ocean_surface:
+                    if (rx_x, rx_y, rx_z) in fixed_receivers:
+                        model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],1)
+                        model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
+                    else:
+                        model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                        model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],0)
 
-				for (sx,sy) in ocean:
-					if (sx,sy) in fixed_sources:
-						model.variables.set_lower_bounds(s[sx,sy],1)
-						model.variables.set_upper_bounds(s[sx,sy],1)
-					else:
-						model.variables.set_lower_bounds(s[sx,sy],0)
-						model.variables.set_upper_bounds(s[sx,sy],0)
+                for (tx_x, tx_y, tx_z) in ocean_surface:
+                    model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                    model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
 
-				for (rx,ry) in ocean:
-					model.variables.set_lower_bounds(r[rx,ry],0)
-					model.variables.set_upper_bounds(r[rx,ry],1)
+                model.write(outdir+"/bison.lp")
 
-				# get positions of sources
+                # get positions of sources
 
-				model.solve()
+                model.solve()
 
-				obj = model.solution.get_objective_value()
-				#print(f"Solution value = {obj}")
+                obj = model.solution.get_objective_value()
+                #print(f"Solution value = {obj}")
 
-				fixed_receivers = {}
-				for (rx,ry) in ocean:
-					if model.solution.get_values(r[rx,ry]) > 0.999:
-						#print(f"got one receiver at {rx} {ry}")
-						fixed_receivers[rx,ry] = 1
+                fixed_sources = {}
 
-				# LOOP
-				if (old_obj > obj):
-					old_obj = obj
-				else:
-					break
+                for (tx_x, tx_y, tx_z) in ocean_surface:
+                    if model.solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
+                        #print(f"got one source at {sx} {sy}")
+                        fixed_sources[tx_x, tx_y, tx_z] = 1
 
-			best_receivers = fixed_receivers
-			best_sources = fixed_sources
-			best_obj = obj
+                # fix the source variables of the positions in fixed_sources to 1, and all others to 0
+                # free the receiver variables again
 
-			number_of_sources = len(fixed_sources)
-			number_of_receivers = len(fixed_receivers)
+                for (tx_x, tx_y, tx_z) in ocean_surface:
+                    if (tx_x, tx_y, tx_z) in fixed_sources:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],1)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
+                    else:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],0)
 
-			print(f"  Found new incumbent at iteration 0 with objective value {obj}")
+                for (rx_x, rx_y, rx_z) in ocean_surface:
+                    model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                    model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-			# number of sources fixed in the model
+                # get positions of sources
+                
+                model.solve()
 
-			thevars = []
-			thecoefs = []
+                obj = model.solution.get_objective_value()
+                #print(f"Solution value = {obj}")
 
-			for tx_x,tx_y in ocean:
-				thevars.append(s[tx_x,tx_y])
-				thecoefs.append(1.0)
+                fixed_receivers = {}
+                for (rx_x, rx_y, rx_z) in ocean_surface:
+                    if model.solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+                        #print(f"got one receiver at {rx} {ry}")
+                        fixed_receivers[rx_x, rx_y, rx_z] = 1
 
-			model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [number_of_sources])
+                # LOOP
+                if (old_obj > obj):
+                    old_obj = obj
+                else:
+                    break
 
-			# LOOP HEURISTIC
+            best_receivers = fixed_receivers
+            best_sources = fixed_sources
+            best_obj = obj
 
-			list_of_fixed_sources = []
+            number_of_sources = len(fixed_sources)
+            number_of_receivers = len(fixed_receivers)
 
-			for round in range(instance.HEURISTIC - 1):
-				print(f"----------{round+1}-----------")
+            print(f"  Found new incumbent at iteration 0 with objective value {obj}")
 
-				# INNER LOOP
+            # number of sources fixed in the model
 
-				while True:
-					fixed_sources = {}
+            thevars = []
+            thecoefs = []
 
-					while len(fixed_sources) < number_of_sources:
-						sx,sy = random.choice(list(ocean.keys()))
+            for tx_x, tx_y, tx_z in ocean_surface:
+                thevars.append(s[tx_x, tx_y, tx_z])
+                thecoefs.append(1.0)
 
-						if (sx,sy) not in fixed_sources:
-							fixed_sources[sx,sy] = 1
+            model.linear_constraints.add(lin_expr = [cplex.SparsePair(thevars,thecoefs)], senses = ["E"], rhs = [number_of_sources])
 
-					if (fixed_sources not in list_of_fixed_sources):
-						list_of_fixed_sources.append(fixed_sources)
-						break
+            # LOOP HEURISTIC
 
-					#print(f"do it again")
+            list_of_fixed_sources = []
 
-				# fix the source variables of the positions in fixed_sources to 1, and all others to 0
-				# free the receivers
+            for round in range(instance.HEURISTIC - 1):
+                print(f"----------{round+1}-----------")
 
-				for (sx,sy) in ocean:
-					if (sx,sy) in fixed_sources:
-						model.variables.set_lower_bounds(s[sx,sy],1)
-						model.variables.set_upper_bounds(s[sx,sy],1)
-					else:
-						model.variables.set_lower_bounds(s[sx,sy],0)
-						model.variables.set_upper_bounds(s[sx,sy],0)
+                # INNER LOOP
 
-				for (rx,ry) in ocean:
-					model.variables.set_lower_bounds(r[rx,ry],0)
-					model.variables.set_upper_bounds(r[rx,ry],1)
+                while True:
 
-				#model.write(outdir+"/bison.lp")
+                    fixed_sources = {}
 
-				# get positions of sources
+                    while len(fixed_sources) < number_of_sources:
+                        tx_x, tx_y, tx_z = random.choice(list(ocean_surface.keys()))
 
-				model.solve()
+                        if (tx_x, tx_y, tx_z) not in fixed_sources:
+                            fixed_sources[tx_x, tx_y, tx_z] = 1
 
-				if (model.solution.get_status_string() != 'integer infeasible'):
+                    if (fixed_sources not in list_of_fixed_sources):
+                        list_of_fixed_sources.append(fixed_sources)
+                        break
 
-					obj = model.solution.get_objective_value()
-					#print(f"Solution value = {obj}")
+                    #print(f"do it again")
 
-					fixed_receivers = {}
-					for (rx,ry) in ocean:
-						if model.solution.get_values(r[rx,ry]) > 0.999:
-							#print(f"got one receiver at {rx} {ry}")
-							fixed_receivers[rx,ry] = 1
+                # fix the source variables of the positions in fixed_sources to 1, and all others to 0
+                # free the receivers
 
-					if best_obj > obj:
-						best_obj = obj
-						best_receivers = fixed_receivers
-						best_sources = fixed_sources
-						print(f"  Found new incumbent at iteration {round} with objective value {obj}")
+                for (tx_x, tx_y, tx_z) in ocean_surface:
+                    if (tx_x, tx_y, tx_z) in fixed_sources:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],1)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
+                    else:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],0)
 
-		else: # GOAL = 1
-			best_obj = -1
+                for (rx_x, rx_y, rx_z) in ocean_surface:
+                    model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                    model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-			best_sources = []
-			best_receivers = []
+                model.write(outdir+"/bison.lp")
 
-			list_of_fixed_sources = []
+                # get positions of sources
 
-			for round in range(instance.HEURISTIC):
-				print(f"----------{round}-----------")
-				
-				# INNER LOOP
+                model.solve()
 
-				while True:
-					fixed_sources = {}
+                if (model.solution.get_status_string() != 'integer infeasible'):
 
-					while len(fixed_sources) < instance.S:
-						sx,sy = random.choice(list(ocean.keys()))
+                    obj = model.solution.get_objective_value()
+                    #print(f"Solution value = {obj}")
 
-						if (sx,sy) not in fixed_sources:
-							fixed_sources[sx,sy] = 1
+                    fixed_receivers = {}
+                    for (rx_x, rx_y, rx_z) in ocean_surface:
+                        if model.solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+                            #print(f"got one receiver at {rx} {ry}")
+                            fixed_receivers[rx_x, rx_y, rx_z] = 1
 
-					if fixed_sources not in list_of_fixed_sources:
-						list_of_fixed_sources.append(fixed_sources)
-						print(f"New: {fixed_sources}")
-						break
+                    if best_obj > obj:
+                        best_obj = obj
+                        best_receivers = fixed_receivers
+                        best_sources = fixed_sources
+                        print(f"  Found new incumbent at iteration {round} with objective value {obj}")
 
-					print(f"(Do it again)")
+        else: # GOAL = 1
+            best_obj = -1
 
-				print(f"Fixing sources at: {fixed_sources}")
+            best_sources = []
+            best_receivers = []
 
-				old_obj = -1
+            list_of_fixed_sources = []
 
-				while True:
+            for round in range(instance.HEURISTIC):
+                print(f"----------{round}-----------")
+                
+                # INNER LOOP
 
-					# fix the source variables of the positions in fixed_sources to 1, and all others to 0
-					# free the receivers
+                while True:
+                    fixed_sources = {}
 
-					for (sx,sy) in ocean:
-						if (sx,sy) in fixed_sources:
-							model.variables.set_lower_bounds(s[sx,sy],1)
-							model.variables.set_upper_bounds(s[sx,sy],1)
-						else:
-							model.variables.set_lower_bounds(s[sx,sy],0)
-							model.variables.set_upper_bounds(s[sx,sy],0)
+                    while len(fixed_sources) < instance.S:
+                        tx_x, tx_y, tx_z = random.choice(list(ocean_surface.keys()))
 
-					for (rx,ry) in ocean:
-						model.variables.set_lower_bounds(r[rx,ry],0)
-						model.variables.set_upper_bounds(r[rx,ry],1)
+                        if (tx_x, tx_y, tx_z) not in fixed_sources:
+                            fixed_sources[tx_x, tx_y, tx_z] = 1
 
-					#model.write(outdir+"/bison.lp")
+                    if fixed_sources not in list_of_fixed_sources:
+                        list_of_fixed_sources.append(fixed_sources)
+                        print(f"New: {fixed_sources}")
+                        break
 
-					# get positions of receivers
+                    print(f"(Do it again)")
 
-					model.solve()
+                print(f"Fixing sources at: {fixed_sources}")
 
-					print(f"Solution value (ocean coverage percentage) = {model.solution.get_objective_value()}")
+                old_obj = -1
 
-					fixed_receivers = {}
-					for (rx,ry) in ocean:
-						if model.solution.get_values(r[rx,ry]) > 0.999:
-							#print(f"got one receiver at {rx} {ry}")
-							fixed_receivers[rx,ry] = 1
+                while True:
 
-					# fix the receiver variables of the positions in fixed_receivers to 1, and all others to 0
-					# free the source variables again
+                    # fix the source variables of the positions in fixed_sources to 1, and all others to 0
+                    # free the receivers
 
-					for (rx,ry) in ocean:
-						if (rx,ry) in fixed_receivers:
-							model.variables.set_lower_bounds(r[rx,ry],1)
-							model.variables.set_upper_bounds(r[rx,ry],1)
-						else:
-							model.variables.set_lower_bounds(r[rx,ry],0)
-							model.variables.set_upper_bounds(r[rx,ry],0)
+                    for (tx_x, tx_y, tx_z) in ocean_surface:
+                        if (tx_x, tx_y, tx_z) in fixed_sources:
+                            model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],1)
+                            model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
+                        else:
+                            model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                            model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],0)
 
-					for (sx,sy) in ocean:
-						model.variables.set_lower_bounds(s[sx,sy],0)
-						model.variables.set_upper_bounds(s[sx,sy],1)
+                    for (rx_x, rx_y, rx_z) in ocean_surface:
+                        model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                        model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-					# get positions of sources
+                    model.write(outdir+"/bison.lp")
 
-					model.solve()
+                    # get positions of receivers
 
-					obj = model.solution.get_objective_value()
-					print(f"Solution value (ocean coverage percentage) = {obj}")
+                    model.solve()
 
-					fixed_sources = {}
-					for (sx,sy) in ocean:
-						if model.solution.get_values(s[sx,sy]) > 0.999:
-							#print(f"got one source at {sx} {sy}")
-							fixed_sources[sx,sy] = 1
+                    print(f"Solution value (ocean coverage percentage) = {model.solution.get_objective_value()}")
 
-					# LOOP
-					if (old_obj < obj):
-						old_obj = obj
-					else:
-						break
+                    fixed_receivers = {}
+                    for (rx_x, rx_y, rx_z) in ocean_surface:
+                        if model.solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+                            #print(f"got one receiver at {rx} {ry}")
+                            fixed_receivers[rx_x, rx_y, rx_z] = 1
 
+                    # fix the receiver variables of the positions in fixed_receivers to 1, and all others to 0
+                    # free the source variables again
 
-				if best_obj < obj:
-					best_obj = obj
-					best_receivers = fixed_receivers
-					best_sources = fixed_sources
-					print(f"  Found new incumbent at iteration {round} with objective value {obj}")
+                    for (rx_x, rx_y, rx_z) in ocean_surface:
+                        if (rx_x, rx_y, rx_z) in fixed_receivers:
+                            model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],1)
+                            model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
+                        else:
+                            model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                            model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],0)
 
-		# resort to best solution (as MIP starter)
+                    for (tx_x, tx_y, tx_z) in ocean_surface:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
 
-		#print(f"best objective {best_obj}")
-		#print(f"best receivers {best_receivers}")
-		#print(f"best sources {best_sources}")
+                    # get positions of sources
 
-		for (rx,ry) in ocean:
-			if (rx,ry) in best_receivers:
-				model.variables.set_lower_bounds(r[rx,ry],1)
-				model.variables.set_upper_bounds(r[rx,ry],1)
-			else:
-				model.variables.set_lower_bounds(r[rx,ry],0)
-				model.variables.set_upper_bounds(r[rx,ry],0)
+                    model.solve()
 
-		for (sx,sy) in ocean:
-					if (sx,sy) in best_sources:
-						model.variables.set_lower_bounds(s[sx,sy],1)
-						model.variables.set_upper_bounds(s[sx,sy],1)
-					else:
-						model.variables.set_lower_bounds(s[sx,sy],0)
-						model.variables.set_upper_bounds(s[sx,sy],0)
+                    obj = model.solution.get_objective_value()
+                    print(f"Solution value (ocean coverage percentage) = {obj}")
 
-		#model.write(outdir+"/bison.lp")
-		model.solve()
+                    fixed_sources = {}
+                    for (tx_x, tx_y, tx_z) in ocean_surface:
+                        if model.solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
+                            #print(f"got one source at {sx} {sy}")
+                            fixed_sources[tx_x, tx_y, tx_z] = 1
 
-		# free everything
+                    # LOOP
+                    if (old_obj < obj):
+                        old_obj = obj
+                    else:
+                        break
 
-		for (sx,sy) in ocean:
-					model.variables.set_lower_bounds(s[sx,sy],0)
-					model.variables.set_upper_bounds(s[sx,sy],1)
 
-		for (rx,ry) in ocean:
-					model.variables.set_lower_bounds(r[rx,ry],0)
-					model.variables.set_upper_bounds(r[rx,ry],1)
+                if best_obj < obj:
+                    best_obj = obj
+                    best_receivers = fixed_receivers
+                    best_sources = fixed_sources
+                    print(f"  Found new incumbent at iteration {round} with objective value {obj}")
 
-		# turn on messaging to screen
+        # resort to best solution (as MIP starter)
 
-		model.set_results_stream(sys.stdout)
-		model.set_warning_stream(sys.stdout)
+        #print(f"best objective {best_obj}")
+        #print(f"best receivers {best_receivers}")
+        #print(f"best sources {best_sources}")
 
+        for (rx_x, rx_y, rx_z) in ocean_surface:
+            if (rx_x, rx_y, rx_z) in best_receivers:
+                model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],1)
+                model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
+            else:
+                model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],0)
 
-	# write model
+        for (tx_x, tx_y, tx_z) in ocean_surface:
+                    if (tx_x, tx_y, tx_z) in best_sources:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],1)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
+                    else:
+                        model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                        model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],0)
 
-	model.write(outdir + "/bison.lp")
+        #model.write(outdir+"/bison.lp")
+        model.solve()
 
-	# solve model
+        # free everything
 
-	if instance.SOLVE == 0: # solve root relaxation (without cuts)
-		model.set_problem_tar_ype(tar_ype=model.problem_tar_ype.LP)
+        for (tx_x, tx_y, tx_z) in ocean_surface:
+                    model.variables.set_lower_bounds(s[tx_x, tx_y, tx_z],0)
+                    model.variables.set_upper_bounds(s[tx_x, tx_y, tx_z],1)
 
-		try:
-			start = time.time()
-			model.solve()
-			end = time.time()
-			print(f"It took {(end - start):.2f} sec to solve root")
+        for (rx_x, rx_y, rx_z) in ocean_surface:
+                    model.variables.set_lower_bounds(r[rx_x, rx_y, rx_z],0)
+                    model.variables.set_upper_bounds(r[rx_x, rx_y, rx_z],1)
 
-		except (CplexSolverError) as exc:
-			print(f"** Exception: {exc}")
+        # turn on messaging to screen
 
-		solution = model.solution
-		print(f"Solution value = {solution.get_objective_value()}")
-		quit()
+        model.set_results_stream(sys.stdout)
+        model.set_warning_stream(sys.stdout)
 
-	if instance.SOLVE == 1: # solve roots+cuts
-		model.parameters.mip.limits.nodes.set(0)
 
-		try:
-			start = time.time()
-			model.solve()
-			end = time.time()
-			print(f"It took {(end - start):.2f} sec to solve root+cuts")
+    # write model
 
-		except (CplexSolverError) as exc:
-			print(f"** Exception: {exc}")
+    model.write(outdir + "/bison.lp")
 
-		solution = model.solution
-		print(f"Solution value = {solution.get_objective_value()}")
-		print(f"Best bound = {solution.MIP.get_best_objective()}")
-		quit()
+    # solve model
 
-	# solve to optimalitar_y (0.0%), until timelimit reached
+    if instance.SOLVE == 0: # solve root relaxation (without cuts)
+        model.set_problem_tar_ype(tar_ype=model.problem_tar_ype.LP)
 
-	model.parameters.timelimit.set(instance.TIMELIMIT)
-	model.parameters.mip.tolerances.mipgap.set(0.0)
-	model.parameters.workmem.set(instance.RAM)
-	model.parameters.mip.strategy.file.set(2)               # store node file on disk (uncompressed) when workmem is exceeded
+        try:
+            start = time.time()
+            model.solve()
+            end = time.time()
+            print(f"It took {(end - start):.2f} sec to solve root")
 
-	try:
-		start = time.time()
-		model.solve()
-		end = time.time()
-		print(f"It took {(end - start):.2f} sec to solve")
+        except (CplexSolverError) as exc:
+            print(f"** Exception: {exc}")
 
-	except (CplexSolverError) as exc:
-		print(f"** Exception: {exc}")
+        solution = model.solution
+        print(f"Solution value = {solution.get_objective_value()}")
+        quit()
 
-	# solution interpretation
+    if instance.SOLVE == 1: # solve roots+cuts
+        model.parameters.mip.limits.nodes.set(0)
 
-	solution = model.solution
+        try:
+            start = time.time()
+            model.solve()
+            end = time.time()
+            print(f"It took {(end - start):.2f} sec to solve root+cuts")
 
-	objval = 0
+        except (CplexSolverError) as exc:
+            print(f"** Exception: {exc}")
 
-	#print(f"Solution status = ", solution.get_status())
+        solution = model.solution
+        print(f"Solution value = {solution.get_objective_value()}")
+        print(f"Best bound = {solution.MIP.get_best_objective()}")
+        quit()
 
-	if solution.get_status() == solution.status.MIP_optimal:
-		print(f"MIP optimal")
-	elif solution.get_status() == solution.status.MIP_time_limit_feasible:
-		print(f"MIP time limit feasible")
+    # solve to optimalitar_y (0.0%), until timelimit reached
 
-	if solution.is_primal_feasible():
-		objval = solution.get_objective_value()
+    model.parameters.timelimit.set(instance.TIMELIMIT)
+    model.parameters.mip.tolerances.mipgap.set(0.0)
+    model.parameters.workmem.set(instance.RAM)
+    model.parameters.mip.strategy.file.set(2)               # store node file on disk (uncompressed) when workmem is exceeded
 
-		print(f"Solution value = {objval}")
-		solution.write(outdir + "/bison.sol")
-	else:
-		print(f"No solution available.")
+    try:
+        start = time.time()
+        model.solve()
+        end = time.time()
+        print(f"It took {(end - start):.2f} sec to solve")
 
-	bestbound = solution.MIP.get_best_objective()
+    except (CplexSolverError) as exc:
+        print(f"** Exception: {exc}")
 
-	print(f"Best bound = {bestbound:.2f}")
+    # solution interpretation
 
-	gap = 100.0
+    solution = model.solution
 
-	if instance.GOAL == 0: # minimize cost
-		if objval > 0:
-			gap = (objval - bestbound) / objval * 100
-	else: # maximize coverage
-		if bestbound > 0:
-			gap = (bestbound - objval) / bestbound * 100
+    objval = 0
 
-	print(f"MIP gap = {gap:.2f}%")
+    #print(f"Solution status = ", solution.get_status())
 
-	if instance.USERCUTS == 1:
-		print(f"Calls of user cut callback: {usercut_cb.number_of_calls}")
-		print(f"Number of user cut added: {usercut_cb.number_of_cuts_added}")
+    if solution.get_status() == solution.status.MIP_optimal:
+        print(f"MIP optimal")
+    elif solution.get_status() == solution.status.MIP_time_limit_feasible:
+        print(f"MIP time limit feasible")
 
-	if not solution.is_primal_feasible():
-		quit()
+    if solution.is_primal_feasible():
+        objval = solution.get_objective_value()
 
-	# ---------------------------------------------------
-	# --- output solution on screen
-	# ---------------------------------------------------
+        print(f"Solution value = {objval}")
+        solution.write(outdir + "/bison.sol")
+    else:
+        print(f"No solution available.")
 
-	print(f"Source locations:")
-	for tx_x,tx_y in ocean:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999:
-			print(f"  ({tx_x}, {tx_y})")
+    bestbound = solution.MIP.get_best_objective()
 
-	print(f"Receiver locations:")
-	for rx_x,rx_y in ocean:
-		if solution.get_values(r[rx_x,rx_y]) > 0.999:
-			print(f"  ({rx_x}, {rx_y})")
+    print(f"Best bound = {bestbound:.2f}")
 
-	if instance.GOAL == 1:
-		print(f"Covered ocean pixels:")
-		for tar_x,tar_y in ocean:
-			if solution.get_values(c[tar_x,tar_y]) > 0.999:
-				print(f"  ({tar_x}, {tar_y})")
+    gap = 100.0
 
-		print(f"Not covered ocean pixels:")
-		for tar_x,tar_y in ocean:
-			if solution.get_values(c[tar_x,tar_y]) < 0.001:
-				print(f"  ({tar_x}, {tar_y})")
+    if instance.GOAL == 0: # minimize cost
+        if objval > 0:
+            gap = (objval - bestbound) / objval * 100
+    else: # maximize coverage
+        if bestbound > 0:
+            gap = (bestbound - objval) / bestbound * 100
 
-	# ---------------------------------------------------
-	# --- output solution to files
-	# ---------------------------------------------------
+    print(f"MIP gap = {gap:.2f}%")
 
-	file = open(outdir + "/solution-r.csv","w+")
+    if instance.USERCUTS == 1:
+        print(f"Calls of user cut callback: {usercut_cb.number_of_calls}")
+        print(f"Number of user cut added: {usercut_cb.number_of_cuts_added}")
 
-	file.write("rx ry\n")
+    if not solution.is_primal_feasible():
+        quit()
 
-	for rx_x,rx_y in ocean:
-		if solution.get_values(r[rx_x,rx_y]) > 0.999:
-			file.write(str(rx_x)+" "+str(rx_y)+"\n")
+    # ---------------------------------------------------
+    # --- output solution on screen
+    # ---------------------------------------------------
 
-	file.close()
+    print(f"Source locations:")
+    for tx_x, tx_y, tx_z in ocean_surface:
+        if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
+            print(f"  ({tx_x}, {tx_y})")
 
-	file = open(outdir+"/solution-s.csv","w+")
+    print(f"Receiver locations:")
+    for rx_x, rx_y, rx_z in ocean_surface:
+        if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+            print(f"  ({rx_x}, {rx_y})")
 
-	file.write("sx sy\n")
+    if instance.GOAL == 1:
+        print(f"Covered ocean pixels:")
+        for tar_x, tar_y, tar_z in ocean:
+            if solution.get_values(c[tar_x, tar_y, tar_z]) > 0.999:
+                print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
-	for tx_x,tx_y in ocean:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999:
-			file.write(str(tx_x)+" "+str(tx_y)+"\n")
+        print(f"Not covered ocean pixels:")
+        for tar_x, tar_y, tar_z in ocean:
+            if solution.get_values(c[tar_x, tar_y, tar_z]) < 0.001:
+                print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
-	file.close()
+    # ---------------------------------------------------
+    # --- output solution to files
+    # ---------------------------------------------------
 
-	# ---------------------------------------------------
-	# --- compute coverage value per pixel
-	# ---------------------------------------------------
+    file = open(outdir + "/solution-r.csv","w+")
 
-	cov_val = {}
+    file.write("rx ry\n")
 
-	for tar_x,tar_y in ocean:
-		cov_val[tar_x,tar_y] = 0
+    for rx_x, rx_y, rx_z in ocean_surface:
+        if solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+            file.write(str(rx_x)+" "+str(rx_y)+"\n")
 
-	for tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y in detection_prob:
-		if solution.get_values(s[tx_x,tx_y]) > 0.999 and solution.get_values(r[rx_x,rx_y]) > 0.999:
-			cov_val[tar_x,tar_y] = cov_val[tar_x,tar_y] + detection_prob[tar_x,tar_y,theta,tx_x,tx_y,rx_x,rx_y]
+    file.close()
 
-	
-	# ---------------------------------------------------
-	# --- output solution as latex
-	# ---------------------------------------------------
+    file = open(outdir+"/solution-s.csv","w+")
 
-	paperwidth = instance.X+5
-	paperheight = instance.Y+5
+    file.write("sx sy\n")
 
-	file = open(outdir+"/solution.tex","w+")
+    for tx_x, tx_y, tx_z in ocean_surface:
+        if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999:
+            file.write(str(tx_x)+" "+str(tx_y)+"\n")
 
-	file.write("\\documentclass[12pt]{article}\n")
-	file.write("\\usepackage{tikz}\n")
-	file.write("\\usepackage{pgfplots}\n")
-	file.write("\\usepackage[paperwidth="+str(paperwidth)+"cm, paperheight="+str(paperheight)+"cm, margin=1cm]{geometry}\n")
-	file.write("\\begin{document}\n")
-	file.write("\\begin{tikzpicture}\n")
-	file.write("	\\begin{axis}[\n")
-	file.write("	xtick={1,...,"+str(instance.X)+"},\n")
-	file.write("	ytick={1,...,"+str(instance.Y)+"},\n")
-	file.write("	width="+str(instance.X+1)+"cm,\n")
-	file.write("	height="+str(instance.Y+1)+"cm,\n")
-	file.write("	xmin=0.5,\n")
-	file.write("	xmax="+str(instance.X+0.5)+",\n")
-	file.write("	ymin=0.5,\n")
-	file.write("	ymax="+str(instance.Y+0.5)+",\n")
-	file.write("	xlabel={$x$},\n")
-	file.write("	ylabel={$y$},\n")
-	file.write("	grid=major,\n")
-	file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
+    file.close()
 
-	for i in range(0,instance.X):
-		for j in range(0,instance.Y):
-			if map[i][j] < 0.0:
-				val = int(30 + 70 * map[i][j] / min_depth)
-				file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
-			else:
-				val = int(30 + 70 * map[i][j] / max_depth)
-				file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-				file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
+    # ---------------------------------------------------
+    # --- compute coverage value per pixel
+    # ---------------------------------------------------
 
-	if instance.GOAL == 1: # goal: maximize coverage
-		for tar_x,tar_y in ocean:
-			if instance.CC == 1: # cookie-cutter model
-				if solution.get_values(c[tar_x,tar_y]) > 0.999:
-					val = str(cov_val[tar_x,tar_y])
-				else:
-					val = "X"
-			else: # probabilistic model
-				if solution.get_values(c[tar_x,tar_y]) > 0.999:
-					val = str(int(100*(1-exp(cov_val[tar_x,tar_y]))))
-				else:
-					val = "X("+str(int(100*(1-exp(cov_val[tar_x,tar_y]))))+")"
+    cov_val = {}
 
-			file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
+    for tar_x, tar_y, tar_z in ocean:
+        cov_val[tar_x, tar_y, tar_z] = 0
 
-	else: # goal: minimize cost for deployed equipment
-		for tar_x,tar_y in ocean:
-			if instance.CC == 1: # cookie-cutter model
-				val = str(cov_val[tar_x,tar_y])
-			else: # probabilistic model
-				val = str(int(100*(1-exp(cov_val[tar_x,tar_y]))))
+    for tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z in detection_prob:
+        if solution.get_values(s[tx_x, tx_y, tx_z]) > 0.999 and solution.get_values(r[rx_x, rx_y, rx_z]) > 0.999:
+            cov_val[tar_x, tar_y, tar_z] = cov_val[tar_x, tar_y, tar_z] + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-			file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
+    
+    # ---------------------------------------------------
+    # --- output solution as latex
+    # ---------------------------------------------------
 
-	file.write("    \\addplot[only marks,mark=*,red,mark size=0.20cm] table\n")
-	file.write("         [\n")
-	file.write("           x expr=\\thisrow{sx},\n")
-	file.write("           y expr=\\thisrow{sy}\n")
-	file.write("         ] {solution-s.csv};\n")
-	file.write("    \\addplot[only marks,mark=triangle*,blue,mark size=0.20cm] table\n")
-	file.write("         [\n")
-	file.write("           x expr=\\thisrow{rx},\n")
-	file.write("           y expr=\\thisrow{ry}\n")
-	file.write("         ] {solution-r.csv};\n")
+    paperwidth = instance.X+5
+    paperheight = instance.Y+5
 
-	file.write("	\\end{axis}\n")
-	file.write("\\end{tikzpicture}\n")
-	file.write("\\end{document}\n")
+    file = open(outdir+"/solution.tex","w+")
 
-	file.close()
+    file.write("\\documentclass[12pt]{article}\n")
+    file.write("\\usepackage{tikz}\n")
+    file.write("\\usepackage{pgfplots}\n")
+    file.write("\\usepackage[paperwidth="+str(paperwidth)+"cm, paperheight="+str(paperheight)+"cm, margin=1cm]{geometry}\n")
+    file.write("\\begin{document}\n")
+    file.write("\\begin{tikzpicture}\n")
+    file.write("	\\begin{axis}[\n")
+    file.write("	xtick={1,...,"+str(instance.X)+"},\n")
+    file.write("	ytick={1,...,"+str(instance.Y)+"},\n")
+    file.write("	width="+str(instance.X+1)+"cm,\n")
+    file.write("	height="+str(instance.Y+1)+"cm,\n")
+    file.write("	xmin=0.5,\n")
+    file.write("	xmax="+str(instance.X+0.5)+",\n")
+    file.write("	ymin=0.5,\n")
+    file.write("	ymax="+str(instance.Y+0.5)+",\n")
+    file.write("	xlabel={$x$},\n")
+    file.write("	ylabel={$y$},\n")
+    file.write("	grid=major,\n")
+    file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
 
-	# ---------------------------------------------------
-	# --- farewell
-	# ---------------------------------------------------
+    for x in range(0,instance.X):
+        for y in range(0,instance.Y):
+            if map[x,y] < 0.0:
+                val = int(30 + 70 * map[x,y] / min_depth)
+                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
+            else:
+                val = int(30 + 70 * map[x,y] / max_depth)
+                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,j]))+"};\n")
 
-	print(f"The total time spent is {(time.time()-start_time):.0f} seconds")
+    if instance.GOAL == 1: # goal: maximize coverage
+        for tar_x, tar_y, tar_z in ocean:
+            if solution.get_values(c[tar_x, tar_y, tar_z]) > 0.999:
+                val = str(cov_val[tar_x, tar_y, tar_z])
+            else:
+                val = "X"
 
-	print(f"Output written to '{color.RED + outdir + color.END}'")
+            file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
 
-	print(f"This is the end, my only friend, the end...")
+    else: # goal: minimize cost for deployed equipment
+        for tar_x, tar_y, tar_z in ocean:
+            val = str(cov_val[tar_x, tar_y, tar_z])
+
+
+            file.write("    \\node at (axis cs:"+str(tar_x)+","+str(tar_y)+") [below,font=\\scriptsize] {"+val+"};\n")
+
+    file.write("    \\addplot[only marks,mark=*,red,mark size=0.20cm] table\n")
+    file.write("         [\n")
+    file.write("           x expr=\\thisrow{sx},\n")
+    file.write("           y expr=\\thisrow{sy}\n")
+    file.write("         ] {solution-s.csv};\n")
+    file.write("    \\addplot[only marks,mark=triangle*,blue,mark size=0.20cm] table\n")
+    file.write("         [\n")
+    file.write("           x expr=\\thisrow{rx},\n")
+    file.write("           y expr=\\thisrow{ry}\n")
+    file.write("         ] {solution-r.csv};\n")
+
+    file.write("	\\end{axis}\n")
+    file.write("\\end{tikzpicture}\n")
+    file.write("\\end{document}\n")
+
+    file.close()
+
+    # ---------------------------------------------------
+    # --- farewell
+    # ---------------------------------------------------
+
+    print(f"The total time spent is {(time.time()-start_time):.0f} seconds")
+
+    print(f"Output written to '{outdir}'")
+
+    print(f"This is the end, my only friend, the end...")
 

@@ -32,19 +32,19 @@ def create_latex_map(instance, map, minval, maxval, outdir):
     file.write("	grid=major,\n")
     file.write("	title=\\color{red}sender\\color{black}/\\color{blue}receiver \\color{black} location and \\color{cyan}area covered\\color{black}]\n")
 
-    for i in range(0,instance.X):
+    for x in range(0,instance.X):
 
-        for j in range(0,instance.Y):
+        for y in range(0,instance.Y):
 
-            if map[i][j] < 0.0:
-                val = int(30 + 70 * map[i][j] / minval)
-                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-                file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
+            if map[x,y] < 0.0:
+                val = int(30 + 70 * map[x,y] / minval)
+                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
             else:
-                val = int(30 + 70 * map[i][j] / maxval)
-                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(i)+","+str(j)+")};\n")
-                file.write("    \\node at (axis cs:"+str(i)+","+str(j)+") [above,font=\\scriptsize] {"+str(int(map[i][j]))+"};\n")
+                val = int(30 + 70 * map[x,y] / maxval)
+                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
     file.write("	\\end{axis}\n")
     file.write("\\end{tikzpicture}\n")
@@ -56,9 +56,9 @@ def create_ocean_dat(ocean, outdir):
 
 	file = open(outdir + "/ocean.dat", "w+")
 
-	for i,j in ocean:
+	for x,y,z in ocean:
 
-		file.write(str(i) + " " + str(j)+"\n")
+		file.write(str(x) + " " + str(y) + " " + str(z) + "\n")
 
 	file.close()
 
@@ -68,11 +68,11 @@ def create_map_dat(instance, map, outdir):
 
     file = open(outdir + "/map.dat", "w+")
 
-    for i in range(0,instance.X):
+    for x in range(0,instance.X):
 
-        for j in range(0,instance.Y):
+        for y in range(0,instance.Y):
 
-            file.write(str(i) + " " + str(j) + " " + str(map[i][j]) + "\n")
+            file.write(str(x) + " " + str(y) + " " + str(map[x,y]) + "\n")
 
     file.close()
 
