@@ -241,8 +241,6 @@ if __name__ == '__main__':
 
     # CONSTRAINTS
 
-    # probabilistic models
-
     if instance.GOAL == 1:
         # for all models below, if the goal is to 'deploy equipment, maximize coverage', then here the equipment gets fixed
 
@@ -335,6 +333,7 @@ if __name__ == '__main__':
         usercut_cb.number_of_cuts_added = 0
     else:
         usercut_cb = None
+
     # OBJECTIVE FUNCTION
 
     if instance.GOAL == 0: # goal: minimize cost for deployed equipment
