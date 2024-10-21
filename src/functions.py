@@ -216,7 +216,9 @@ def reading_in_ocean_data(instance):
 
                             max_depth = element
 
-                        map[x,y] = element
+                if z == 0:
+                    
+                    map[x,y] = element
 
 
     return map, ocean, ocean_surface, min_depth, max_depth
