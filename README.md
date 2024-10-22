@@ -6,9 +6,9 @@ Requires libraries: NumPy, MatPlotLib, IBM ILOG Cplex
 
 IBM ILOG Cplex can be obtained via IBM Academic Initiative for free.
 
-Call: python3 bison.py <Instance Name>
+Call: python3 bison.py `<instance name>`
 
-<Instance Name> is one of the 30 instances provided. For example:
+`<instance name>` is one of the 30 instances provided. For example:
 
 python3 bison.py Agadir
 
