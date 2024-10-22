@@ -409,11 +409,11 @@
 
             var timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             var content = "BISON - BI-static Sonar OptimizatioN\n\n";
-            content += "Optimization Type: " + optimizationType + "\n";
-            content += "Square Size: " + squareSize + " NM\n\n";
+            content += "OptimizationType = " + optimizationType + "\n";
+            content += "SquareSize = " + squareSize + "\n\n";
             content += "Corner Coordinates:\n";
-            content += "NW: " + nw[0].toFixed(6) + ", " + nw[1].toFixed(6) + "\n";
-            content += "SE: " + se[0].toFixed(6) + ", " + se[1].toFixed(6) + "\n\n";
+            content += "NW = [" + nw[0].toFixed(6) + ", " + nw[1].toFixed(6) + "]\n";
+            content += "SE = [" + se[0].toFixed(6) + ", " + se[1].toFixed(6) + "]\n\n";
 
             if (optimizationType === 'cost') {
                 content += "S = " + document.getElementById('senderCost').value + "\n";
