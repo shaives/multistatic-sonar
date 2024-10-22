@@ -118,16 +118,22 @@
             background-color: #e67e00;
         }
         .info-panel {
-            padding: 10px;
             background: white;
-            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
             border-radius: 5px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
-            max-width: 300px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            width: 200px;  /* Match the width of other controls */
         }
         .info-panel h4 {
-            margin: 0 0 5px;
-            color: #777;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        /* Add this to ensure consistent spacing */
+        .info-panel p {
+            margin: 5px 0;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -251,14 +257,14 @@
         // Custom control for info display
         L.Control.InfoPanel = L.Control.extend({
             onAdd: function(map) {
-                this._div = L.DomUtil.create('div', 'info-panel leaflet-control');
+                this._div = L.DomUtil.create('div', 'leaflet-bar leaflet-control info-panel');
                 this.update();
                 return this._div;
             },
 
             update: function(data) {
                 if (!data) {
-                    this._div.innerHTML = '<h4>Selection Info</h4>Select an area on the map';
+                    this._div.innerHTML = '<div class="control-title">Selection Info</div>Select an area on the map';
                     return;
                 }
                 this._div.innerHTML = data;
@@ -287,7 +293,6 @@
             displayCoordinates(bounds);
         }
 
-        // Function to display coordinates and optimization info
         function displayCoordinates(bounds) {
             var nw = [bounds.getNorth(), bounds.getWest()];
             var se = [bounds.getSouth(), bounds.getEast()];
@@ -300,17 +305,18 @@
             if (optimizationType === 'cost') {
                 var senderCost = document.getElementById('senderCost').value || '0';
                 var receiverCost = document.getElementById('receiverCost').value || '0';
-                optimizationInfo = 'Sender Buoy Cost: ' + senderCost + '<br>Receiver Buoy Cost: ' + receiverCost;
+                optimizationInfo = '<strong>Sender Buoy Cost:</strong> ' + senderCost + '<br><strong>Receiver Buoy Cost:</strong> ' + receiverCost;
             } else {
                 var senderCount = document.getElementById('senderCount').value || '0';
                 var receiverCount = document.getElementById('receiverCount').value || '0';
-                optimizationInfo = '# of Sender Buoys: ' + senderCount + '<br># of Receiver Buoys: ' + receiverCount;
+                optimizationInfo = '<strong># of Sender Buoys:</strong> ' + senderCount + '<br><strong># of Receiver Buoys:</strong> ' + receiverCount;
             }
             
-            var content = '<h4>Selection Info</h4>' +
-                        'Optimization Type: ' + optimizationType + '<br>' +
-                        optimizationInfo + '<br><br>' +
-                        'Corner Coordinates:<br>' + coordString;
+            var content = '<div class="control-title">Selection Info</div>' +
+                        '<div><strong>Optimization Type:</strong> ' + optimizationType + '</div>' +
+                        '<div>' + optimizationInfo + '</div>' +
+                        '<div><strong>Corner Coordinates:</strong></div>' +
+                        '<div>' + coordString + '</div>';
             
             infoPanel.update(content);
         }
@@ -324,7 +330,7 @@
             });
         });
 
-        // Event handler for radio button changes
+        // Update event handlers to use the info panel
         document.addEventListener('change', function(e) {
             if (e.target.name === 'optimizationType') {
                 document.getElementById('coverageInputs').style.display = 
