@@ -6,8 +6,8 @@
 #SBATCH --mem=64GB
 #SBATCH --partition=0                           # partitions = {"0":'primary', "1":'beards', "2":'dsag', "3":'bassett'}
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
-#SBATCH --output=logs/%j_out.txt
-#SBATCH --time 1-00:00:00
+#SBATCH --output=logs/%j_out.txt                # path for logs
+#SBATCH --time 1-00:00:00                       # max time running on HPC days-hours:minutes:secounds
 #SBATCH --mail-user conrad.urban.gy@nps.edu
 #SBATCH --mail-type END 
 
