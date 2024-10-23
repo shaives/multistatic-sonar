@@ -18,6 +18,7 @@
             overflow: hidden;
             background-color: #f5f5f7;
         }
+
         #title {
             padding: 10px;
             text-align: center;
@@ -25,19 +26,23 @@
             font-weight: 700;
             width: 100%;
         }
+
         #title .highlight {
             color: #ff8c00;
         }
+
         #map-container {
             width: 100%;
             flex-grow: 1;
             position: relative;
             overflow: hidden;
         }
+
         #map {
             width: 100%;
             height: 100%;
         }
+
         #coordinates-container {
             width: 200px;
             padding: 10px;
@@ -45,10 +50,12 @@
             flex-direction: column;
             align-items: center;
         }
+
         #coordinates {
             width: 100%;
             margin-bottom: 10px;
         }
+
         #download-btn {
             position: fixed;
             bottom: 20px;
@@ -62,24 +69,37 @@
             font-weight: 700;
             z-index: 1000;
         }
+
         #download-btn:hover {
             background-color: #e67e00;
         }
-        .leaflet-control {
+
+        .leaflet-control:not(.leaflet-control-zoom) {
             background: white;
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 1px 5px rgba(0,0,0,0.1);
             margin-bottom: 10px;
         }
+
+        /* Specific zoom control styling */
+        .leaflet-control-zoom {
+            padding: 0 !important;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+
         .leaflet-control label {
             width: 200px;
             display: block;
             margin-bottom: 5px;
         }
+
         .leaflet-control input[type="radio"] {
             margin-right: 5px;
         }
+
         .leaflet-control input[type="number"] {
             width: 95%;
             margin-top: 2px;
@@ -89,21 +109,34 @@
             border: 1px solid #d1d1d1;
             border-radius: 4px;
         }
+
+        /* Zoom control styling */
+        .leaflet-control-zoom {
+            padding: 0 !important;
+            background: white;
+            border-radius: 4px !important;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+
         .control-title {
             font-weight: 700;
             margin-bottom: 10px;
         }
+
         .value-input-container {
             width: 100%;
         }
+
         #coordinateInputs {
             display: none;
             margin-top: 10px;
         }
+
         #coordinateInputs input {
             width: 95%;
             margin-bottom: 5px;
         }
+
         #coordinateInputs button {
             margin-top: 5px;
             padding: 5px;
@@ -114,9 +147,11 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         #coordinateInputs button:hover {
             background-color: #e67e00;
         }
+
         .info-panel {
             background: white;
             padding: 10px;
@@ -125,15 +160,54 @@
             margin-bottom: 10px;
             width: 200px;  /* Match the width of other controls */
         }
+
         .info-panel h4 {
             font-weight: 700;
             margin-bottom: 10px;
             font-size: 14px;
         }
-        /* Add this to ensure consistent spacing */
+
         .info-panel p {
             margin: 5px 0;
             font-size: 12px;
+        }
+
+        .help-button {
+            position: absolute;
+            top: 80px;  /* This positions it below the zoom buttons */
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .help-button:hover {
+            background-color: #f4f4f4;
+        }
+
+        .help-popup .leaflet-popup-content {
+            width: 300px !important;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .help-popup .leaflet-popup-content h3 {
+            margin: 0 0 10px 0;
+            color: #ff8c00;
+        }
+
+        .help-popup .leaflet-popup-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .help-popup .leaflet-popup-content li {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -143,6 +217,7 @@
     </div>
     <div id="map-container">
         <div id="map"></div>
+        <button class="help-button">?</button>
     </div>
     <button id="download-btn">Download Selection</button>
 
@@ -398,6 +473,56 @@
                 createRectangle(L.latLngBounds(startCorner, e.latlng));
             }
         });
+
+        // Help popup functionality
+        function showHelpPopup() {
+            const helpContent = `
+                <div>
+                    <h3>How to Use BISON</h3>
+                    <ul>
+                        <li><strong>Optimization Type:</strong>
+                            <ul>
+                                <li>Coverage - Enter number of sender and receiver buoys</li>
+                                <li>Cost - Enter costs for sender and receiver buoys</li>
+                            </ul>
+                        </li>
+                        <li><strong>Square Size Options:</strong>
+                            <ul>
+                                <li>10x10 NM - Creates a 10 nautical mile square</li>
+                                <li>30x30 NM - Creates a 30 nautical mile square</li>
+                                <li>100x100 NM - Creates a 100 nautical mile square</li>
+                                <li>Custom Size - Click and drag to create custom area</li>
+                                <li>Enter Coordinates - Manually enter corner coordinates</li>
+                            </ul>
+                        </li>
+                        <li><strong>Creating Areas:</strong>
+                            <ul>
+                                <li>Fixed Size: Click on map to place square</li>
+                                <li>Custom Size: Click, drag, and release to draw</li>
+                                <li>Coordinate Input: Enter NW and SE coordinates</li>
+                            </ul>
+                        </li>
+                        <li><strong>Saving:</strong>
+                            <ul>
+                                <li>Click "Download Selection" to save area and settings</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            `;
+
+            L.popup({
+                className: 'help-popup',
+                closeButton: true,
+                maxWidth: 300
+            })
+            .setLatLng(map.getCenter())
+            .setContent(helpContent)
+            .openOn(map);
+        }
+
+// Add event listener to help button
+document.querySelector('.help-button').addEventListener('click', showHelpPopup);
 
         // Function to download selection
         function downloadSelection() {
