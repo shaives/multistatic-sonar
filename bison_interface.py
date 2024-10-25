@@ -1,9 +1,14 @@
 import streamlit as st
 import folium
+import json
+import os
+
 from streamlit_folium import st_folium
 from folium.plugins import Draw
-import json
 from datetime import datetime
+from src.elevation_retriever import *
+from src.output_func import create_config_file
+
 
 def create_box_coordinates(center_lat, center_lon, size_nm):
     """Create box coordinates given center point and size in nautical miles"""
@@ -101,8 +106,8 @@ with st.sidebar:
     else:
         tx_buoys = st.number_input("TX Buoys", value=3)
         rx_buoys = st.number_input("RX Buoys", value=9)
-    
-    # Area selection
+
+    # Area selection  
     area_size = st.radio(
         "Area Size:",
         ["10x10 NM", "30x30 NM", "100x100 NM", "Custom", "Coordinates"]
@@ -120,6 +125,68 @@ with st.sidebar:
             
         # Button to draw coordinate box
         draw_coords = st.button("Draw Area")
+    
+    # Add divider
+    st.markdown("---")
+    
+    # Solver Settings
+    st.subheader("Solver Settings")
+    
+    # Heuristic selection
+    heuristic = st.radio(
+        "Heuristic Mode:",
+        [
+            "None",
+            "Fast (100 rounds)",
+            "Medium (1000 rounds)",
+            "Thorough (5000 rounds)",
+            "Custom"
+        ],
+        help="Heuristic search intensity. More rounds may find better solutions but take longer."
+    )
+    
+    # Custom heuristic rounds if selected
+    if heuristic == "Custom":
+        heuristic_rounds = st.number_input(
+            "Heuristic Rounds",
+            min_value=0,
+            max_value=10000,
+            value=1000,
+            step=100,
+            help="Number of heuristic search rounds. 0 disables heuristic."
+        )
+    
+    # Time limit selection
+    time_limit_unit = st.selectbox(
+        "Time Limit Unit",
+        ["Hours", "Minutes", "Seconds"]
+    )
+    
+    # Adjust time limit input based on unit
+    if time_limit_unit == "Hours":
+        time_limit = st.number_input(
+            "Time Limit (hours)",
+            min_value=1,
+            max_value=168,  # 1 week
+            value=10,
+            help="Maximum time allowed for optimization"
+        ) * 3600
+    elif time_limit_unit == "Minutes":
+        time_limit = st.number_input(
+            "Time Limit (minutes)",
+            min_value=1,
+            max_value=10080,  # 1 week
+            value=600,
+            help="Maximum time allowed for optimization"
+        ) * 60
+    else:  # Seconds
+        time_limit = st.number_input(
+            "Time Limit (seconds)",
+            min_value=1,
+            max_value=604800,  # 1 week
+            value=36000,
+            help="Maximum time allowed for optimization"
+        )
 
     submit = st.button("Submit Job to HPC")
 
@@ -247,12 +314,23 @@ if submit:
     if not area_selected:
         st.error("Please select or draw an area before submitting!")
     else:
+        # Create job directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        job_dir = f"bison_job_{timestamp}"
+        os.makedirs(job_dir, exist_ok=True)
+        
         # Collect all data
         job_data = {
             "optimization_type": opt_type,
             "timestamp": datetime.now().isoformat(),
-            "area_size": area_size
+            "area_size": area_size,
+            "heuristic": heuristic,
+            "time_limit": time_limit
         }
+        
+        # Add heuristic rounds if custom
+        if heuristic == "Custom":
+            job_data["heuristic_rounds"] = heuristic_rounds
         
         # Add type-specific data
         if opt_type == "Cost":
@@ -266,8 +344,14 @@ if submit:
                 "rx_buoys": rx_buoys
             })
         
-        # Add area-specific data
+        # Get corners and retrieve elevation data based on area type
+        corners = None
+        
         if area_size == "Coordinates":
+            corners = {
+                "nw": {"lat": nw_lat, "lon": nw_lon},
+                "se": {"lat": se_lat, "lon": se_lon}
+            }
             job_data.update({
                 "coordinates": {
                     "nw": {"lat": nw_lat, "lon": nw_lon},
@@ -276,35 +360,82 @@ if submit:
                     "ne": {"lat": nw_lat, "lon": se_lon}
                 }
             })
-        elif area_size == "Custom" and "custom_area" in st.session_state:
+            
+        elif area_size == "Custom" and st.session_state.custom_area:
             coords = st.session_state.custom_area['geometry']['coordinates'][0]
-            # For custom area, get corners from drawn rectangle
             lats = [p[1] for p in coords]
             lons = [p[0] for p in coords]
+            corners = {
+                "nw": {"lat": max(lats), "lon": min(lons)},
+                "se": {"lat": min(lats), "lon": max(lons)}
+            }
             job_data.update({
                 "custom_area": st.session_state.custom_area,
                 "corners": {
                     "sw": {"lat": min(lats), "lon": min(lons)},
                     "ne": {"lat": max(lats), "lon": max(lons)},
-                    "nw": {"lat": max(lats), "lon": min(lons)},
-                    "se": {"lat": min(lats), "lon": max(lons)}
+                    "nw": corners["nw"],
+                    "se": corners["se"]
                 }
             })
+            
         elif st.session_state.last_clicked:
             size = int(area_size.split('x')[0])
             center = st.session_state.last_clicked
             box_coords = create_box_coordinates(center["lat"], center["lng"], size)
+            corners = {
+                "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
+                "se": {"lat": box_coords[2][0], "lon": box_coords[2][1]}
+            }
             job_data.update({
                 "center_point": {"lat": center["lat"], "lon": center["lng"]},
                 "size_nm": size,
                 "corners": {
-                    "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
+                    "nw": corners["nw"],
                     "ne": {"lat": box_coords[1][0], "lon": box_coords[1][1]},
-                    "se": {"lat": box_coords[2][0], "lon": box_coords[2][1]},
+                    "se": corners["se"],
                     "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
                 }
             })
         
-        # Save to file
-        saved_file = save_job_data(job_data)
-        st.success(f"Job submitted successfully! Data saved to {saved_file}")
+        try:
+            # Create timestamped job directory name
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            job_dir = f"bison_job_{timestamp}"
+            
+            # Create full path in outputs directory
+            full_job_path = os.path.join("outputs", job_dir)
+            os.makedirs(full_job_path, exist_ok=True)
+            
+            with st.spinner('Retrieving elevation data and creating configuration...'):
+                # Get elevation data
+                grid, metadata = get_elevation_grid(corners, resolution=0.01)
+                
+                # Save elevation data
+                elevation_file = os.path.join(full_job_path, 'elevation.asc')
+                save_as_esri_ascii(grid, metadata, elevation_file)
+                
+                # Save job data
+                job_file = os.path.join(full_job_path, 'job_config.json')
+                with open(job_file, 'w') as f:
+                    json.dump(job_data, f, indent=4)
+                
+                config_file = os.path.join(full_job_path, 'config.py')
+                create_config_file(
+                    job_data,
+                    job_dir,
+                    'elevation.asc',
+                    metadata,  # Pass the metadata from get_elevation_grid
+                    filename=config_file
+                )
+                
+                st.success(f"""Job submitted successfully! 
+                Files saved to outputs/{job_dir}:
+                - elevation.asc (Elevation data, {metadata['ncols']}x{metadata['nrows']} grid)
+                - job_config.json (Job configuration)
+                - config.py (Optimization configuration)
+                
+                Grid dimensions: {metadata['ncols']} x {metadata['nrows']} points""")
+                
+        except Exception as e:
+            st.error(f"Error preparing job files: {str(e)}")
