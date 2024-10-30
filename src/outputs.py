@@ -109,9 +109,20 @@ def create_plot_func_g(instance, outdir):
         fig.savefig(outdir+"/g_cos_theta_polar.png")
         #plt.show()
 
-def output_solution(model, instance, ocean_surface, ocean, detection_prob, outdir, start_time):
+def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, min_depth, max_depth, outdir, start_time):
     """
     Output the solution in various formats
+    Parameters:
+        model: Pyomo model
+        instance: Problem instance
+        ocean_surface: Dictionary of surface coordinates
+        ocean: Dictionary of ocean points
+        detection_prob: Dictionary of detection probabilities
+        map: Dictionary or 2D array with depth values
+        min_depth: Minimum depth value
+        max_depth: Maximum depth value
+        outdir: Output directory
+        start_time: Start time for timing calculation
     """
     # ---------------------------------------------------
     # --- output solution on screen
@@ -126,7 +137,7 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, outdi
         if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
             print(f"  ({rx_x}, {rx_y})")
 
-    if instance.GOAL == 1:
+    if instance.GOAL == 1 and hasattr(model, 'c'):
         print("Covered ocean pixels:")
         for tar_x, tar_y, tar_z in ocean:
             if value(model.c[tar_x, tar_y, tar_z]) > 0.999:
@@ -192,19 +203,22 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, outdi
         # Map visualization
         for x in range(0, instance.X):
             for y in range(0, instance.Y):
-                if instance.map[x,y] < 0.0:
-                    val = int(30 + 70 * instance.map[x,y] / instance.min_depth)
+                if map[x,y] < 0.0:
+                    val = int(30 + 70 * map[x,y] / min_depth)
                     file.write(f"    \\addplot[only marks,mark=square*,blue!{val},opacity=.7,mark size=0.42cm] coordinates{{({x},{y})}};\n")
-                    file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(instance.map[x,y])}}};\n")
+                    file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(map[x,y])}}};\n")
                 else:
-                    val = int(30 + 70 * instance.map[x,y] / instance.max_depth)
+                    val = int(30 + 70 * map[x,y] / max_depth)
                     file.write(f"    \\addplot[only marks,mark=square*,green!{val},opacity=.7,mark size=0.42cm] coordinates{{({x},{y})}};\n")
-                    file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(instance.map[x,y])}}};\n")
+                    file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(map[x,y])}}};\n")
 
         # Coverage visualization
-        if instance.GOAL == 1:
+        if instance.GOAL == 1 and hasattr(model, 'c'):
             for tar_x, tar_y, tar_z in ocean:
-                val = str(cov_val[tar_x, tar_y, tar_z]) if value(model.c[tar_x, tar_y, tar_z]) > 0.999 else "X"
+                if value(model.c[tar_x, tar_y, tar_z]) > 0.999:
+                    val = str(cov_val[tar_x, tar_y, tar_z])
+                else:
+                    val = "X"
                 file.write(f"    \\node at (axis cs:{tar_x},{tar_y}) [below,font=\\scriptsize] {{{val}}};\n")
         else:
             for tar_x, tar_y, tar_z in ocean:
