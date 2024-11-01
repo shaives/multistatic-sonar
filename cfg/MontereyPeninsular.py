@@ -1,7 +1,7 @@
 DIR = "Instances/MontereyPeninsular/" # directory where to find input and store output files
 INPUT = "GMRTv3_3_20170309topo.asc" # file name of ocean floor data
 
-RAM = 8*8192	# 0=use disk, 1=use RAM for storing data
+RAM = 2*8192	# 0=use disk, 1=use RAM for storing data
 
 X = 10 # number of pixels in x-direction
 Y = 10 # number of pixels in y-direction
@@ -27,8 +27,8 @@ USERCUTS = 0 # 0=no user cuts, 1=user cuts on
 
 USERCUTSTRENGTH = 1.0 # how deep must user cuts be to be separated?
 
-HEURISTIC = 1000 # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC = 50 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
-TIMELIMIT = 3600 # time limit in seconds
+TIMELIMIT = 600 # time limit in seconds
