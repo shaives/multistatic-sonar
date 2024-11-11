@@ -862,7 +862,7 @@ if __name__ == '__main__':
             else:
                 val = int(30 + 70 * map[x,y] / max_depth)
                 file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacitar_y=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
-                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,j]))+"};\n")
+                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
     if instance.GOAL == 1: # goal: maximize coverage
         for tar_x, tar_y, tar_z in ocean:
