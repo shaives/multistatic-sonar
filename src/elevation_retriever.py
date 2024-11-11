@@ -10,10 +10,10 @@ def get_elevation_single_point(lat: float, lon: float, retry_count: int = 3) -> 
     # List of APIs to try with their rate limits
     apis = [
         {
-            'name': 'USGS',
-            'url': "https://epqs.nationalmap.gov/v1/json",
-            'params': lambda lat, lon: f"?x={lon}&y={lat}&units=Meters&output=json",
-            'extract': lambda r: float(r.json()['value']),
+            'name': 'Home API',
+            'url': "http://localhost:5000/v1/gebco2024",
+            'params': lambda lat, lon: f"?locations={lat},{lon}",
+            'extract': lambda r: r.json()['results'][0]['elevation'],
             'rate_limit': 0.2  # 1 request per 0.2 seconds (5 per second)
         },
         {
