@@ -107,7 +107,11 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
 def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
 
     print(f"Running {instance.HEURISTIC} rounds of heuristic")
-    solver = SolverFactory(solver_name)  # or your preferred solver
+    # Create solver interface
+    if solver_name == 'cplex':
+        solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
+    elif solver_name == 'gurobi':    
+        solver = SolverFactory(solver_name)
     
     if instance.GOAL == 0:  # minimize cost for deployed equipment
         best_obj = float('inf')
@@ -330,7 +334,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     if solver_name == 'cplex':
         solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
     elif solver_name == 'gurobi':    
-        solver = SolverFactory('gurobi', executable='gurobi')
+        solver = SolverFactory(solver_name)
 
     # Apply heuristic if requested
     if instance.HEURISTIC > 0:
