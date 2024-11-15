@@ -364,7 +364,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         solver.options['timelimit'] = instance.TIMELIMIT
         solver.options['mipgap'] = 0.0
         solver.options['workmem'] = instance.RAM
-        solver.options['populatelim'] = 5
+        #solver.options['populatelim'] = 5
         solver.options['mip.pool.capacity'] = 5
     elif solver.name == 'gurobi':
         solver.options['TimeLimit'] = instance.TIMELIMIT
