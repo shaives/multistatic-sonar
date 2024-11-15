@@ -361,6 +361,8 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     
     # Set solver parameters
     if solver.name == 'cplex':
+        solver.options['writelog'] = 1 
+        solver.options['logfile'] = outdir + '/cplex.log'
         solver.options['timelimit'] = instance.TIMELIMIT
         solver.options['mipgap'] = 0.0
         solver.options['workmem'] = instance.RAM
