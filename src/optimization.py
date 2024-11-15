@@ -130,7 +130,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 model.s[tx_x, tx_y, tx_z].unfix()
             
             # Solve for sources
-            results = solver.solve(model, tee=False)
+            results = solver.solve(model, tee=True)
             
             if results.solver.status == SolverStatus.ok:
                 obj = value(model.objective)
@@ -325,9 +325,13 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
     return best_obj, best_sources, best_receivers
 
 def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
-    # Create solver interface
-    solver = SolverFactory(solver_name)
     
+    # Create solver interface
+    if solver_name == 'cplex':
+        solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
+    elif solver_name == 'gurobi':    
+        solver = SolverFactory('gurobi', executable='gurobi')
+
     # Apply heuristic if requested
     if instance.HEURISTIC > 0:
         best_obj, best_sources, best_receivers = apply_heuristic(model, instance, ocean_surface, solver_name)
