@@ -6,9 +6,10 @@
 #SBATCH --mem=64GB
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
 #SBATCH --output=logs/%j_out.txt                # path for logs
+#SBATCH --error=logs/%j_error.txt
 #SBATCH --time 1-00:00:00                       # max time running on HPC days-hours:minutes:secounds
 #SBATCH --mail-user conrad.urban.gy@nps.edu
-#SBATCH --mail-type END 
+#SBATCH --mail-type END, FAIL 
 
 
 . /etc/profile
