@@ -1,15 +1,15 @@
 DIR = "Instances/MontereyPeninsular/" # directory where to find input and store output files
 INPUT = "GMRTv3_3_20170309topo.asc" # file name of ocean floor data
 
-RAM = 2*8192	# 0=use disk, 1=use RAM for storing data
+RAM = 4*8192	# 0=use disk, 1=use RAM for storing data
 
 X = 10 # number of pixels in x-direction
 Y = 10 # number of pixels in y-direction
 
-GOAL = 0 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
+GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
-S = 12 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
-R = 4 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
+S = 3 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
+R = 9 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
 S_DEPTH = {'tx_d1' : 19.8, 'tx_d2' : 53.3, 'tx_d3' : 91.4 , 'tx_d4' : 152.4} # depth of source (in meters)
 R_DEPTH = {'rx_d1' : 19.8, 'rx_d2' : 53.3, 'rx_d3' : 91.4 , 'rx_d4' : 152.4} # depth of receiver (in meters)
@@ -31,4 +31,4 @@ HEURISTIC = 50 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
-TIMELIMIT = 600 # time limit in seconds
+TIMELIMIT = 3600 # time limit in seconds
