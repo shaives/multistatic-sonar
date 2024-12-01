@@ -15,7 +15,7 @@ S_DEPTH = {'tx_d1' : 19.8, 'tx_d2' : 53.3, 'tx_d3' : 91.4 , 'tx_d4' : 152.4} # d
 R_DEPTH = {'rx_d1' : 19.8, 'rx_d2' : 53.3, 'rx_d3' : 91.4 , 'rx_d4' : 152.4} # depth of receiver (in meters)
 
 rho_0 = 10 # range of the day (in pixels)
-rb = 0.4 # pulse length (for direct-blast-effect) (in pixels)
+rb = 1 # pulse length (for direct-blast-effect) (in pixels)
 
 TS = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
 #TS = [] # if TS is an empty list, the target angle is not considered
@@ -31,4 +31,4 @@ HEURISTIC = 50 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
-TIMELIMIT = 3600 # time limit in seconds
+TIMELIMIT = 36000 # time limit in seconds

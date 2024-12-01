@@ -8,11 +8,14 @@ Y = 10      # number of pixels in y-direction
 
 GOAL = 0    # optimization goal: cover all pixels, minimize cost for deployed equipment (0), or: deploy equipment, maximize coverage (1)
 
-S = 10     # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
-R = 1      # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
+S = 10      # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
+R = 1       # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
-rho_0 = 2   # range of the day (in pixels)
-rb = 1    # pulse length (for direct-blast-effect) (in pixels)
+S_DEPTH = {'tx_d1' : 19.8, 'tx_d2' : 53.3, 'tx_d3' : 91.4 , 'tx_d4' : 152.4} # depth of source (in meters)
+R_DEPTH = {'rx_d1' : 19.8, 'rx_d2' : 53.3, 'rx_d3' : 91.4 , 'rx_d4' : 152.4} # depth of receiver (in meters)
+
+rho_0 = 10  # range of the day (in pixels)
+rb = 1      # pulse length (for direct-blast-effect) (in pixels)
 
 TS = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
 #TS = [] 	# if TS is an empty list, the target angle is not considered
