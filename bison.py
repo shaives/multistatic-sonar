@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # redirect output to screen and logfile
     sys.stdout = Logger(outdir) 
 
-    print(f"BISON - "+{color.BOLD}+"BI"+{color.END}+"static "+{color.BOLD}+"S"+{color.END}+"onar "+{color.BOLD}+"O"+{color.END}+"ptimizatio"+{color.BOLD}+"N"+{color.END})
+    print(f"BISON - BIstatic Sonar OptimizatioN")
     print(f"")
     print(f"                                                                                           ")
     print(f"                                   @@@@@@@@@                                               ")
