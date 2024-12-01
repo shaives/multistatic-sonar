@@ -10,20 +10,27 @@ from cplex.callbacks import UserCutCallback
 # class for loggin the screen output also into file
 
 class Logger(object):
-		def __init__(self, outdir):
-				self.terminal = sys.stdout
-				self.log = open(outdir + "/" + "bison.log", "w+")
+    def __init__(self, outdir):
+        self.terminal = sys.stdout
+        self.log = open(outdir + "/" + "bison.log", "w+", buffering=1)  # Line buffering
 
-		def write(self, message):
-				if message != '\n':
-					message = datetime.now().strftime('%Y-%m-%d %H-%M-%S : ') + message
-				self.terminal.write(message)
-				self.log.write(message)
+    def write(self, message):
+        if message != '\n':
+            message = datetime.now().strftime('%Y-%m-%d %H-%M-%S : ') + message
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush()  # Ensure writing to file immediately
 
-		def flush(self):
-				#this flush method is needed for cplex compatibility.
-				#this handles the flush command by doing nothing.
-				pass
+    def flush(self):
+        # this flush method is needed for cplex compatibility.
+        # we should flush the log file while keeping cplex compatibility
+        self.log.flush()
+        self.terminal.flush()
+
+    def __del__(self):
+        # Ensure the log file is properly closed when the Logger is destroyed
+        if hasattr(self, 'log'):
+            self.log.close()
 		
 # class for nice terminal output
 class color:
