@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # redirect output to screen and logfile
     sys.stdout = Logger(outdir) 
 
-    print(f"BISON - "+color.BOLD+"BI"+color.END+"static "+color.BOLD+"S"+color.END+"onar "+color.BOLD+"O"+color.END+"ptimizatio"+color.BOLD+"N"+color.END)
+    print(f"BISON - "+{color.BOLD}+"BI"+{color.END}+"static "+{color.BOLD}+"S"+{color.END}+"onar "+{color.BOLD}+"O"+{color.END}+"ptimizatio"+{color.BOLD}+"N"+{color.END})
     print(f"")
     print(f"                                                                                           ")
     print(f"                                   @@@@@@@@@                                               ")
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     model = create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob)
     
     print(f"Solve optimization model")
-    results = solve_model(model, instance, ocean_surface, outdir, 'cplex')  # or 'cplex', 'gurobi', etc.
+    results = solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
 
     # ---------------------------------------------------
     # --- output optimization model results
