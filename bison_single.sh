@@ -1,15 +1,29 @@
 #!/bin/sh
-#SBATCH --job-name multistatic-sonar
+#SBATCH --job-name gu-multistatic-sonar
 #SBATCH --nodes=1 
 #SBATCH --ntasks=1                              # How many tasks (i.e. processors w/ distributed memory) do you want? You probably want 1 here unless using MPI.
 #SBATCH --cpus-per-task=16                      # How many cores (i.e. threads w/ shared memory) per processor do you want?
-#SBATCH --mem=64GB
+#SBATCH --mem=64GB                              # How much memory do you want total? (You can use suffixes: M=MB, G=GB, T=TB.)
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
 #SBATCH --output=logs/%j_out.txt                # path for logs
 #SBATCH --time 1-00:00:00                       # max time running on HPC days-hours:minutes:secounds
 #SBATCH --mail-user conrad.urban.gy@nps.edu
-#SBATCH --mail-type END 
+#SBATCH --mail-type ALL
 
+# Print job parameters to log file
+echo "Job Parameters:"
+echo "===============================
+Job name: $SLURM_JOB_NAME
+Job ID: $SLURM_JOB_ID
+Submitted from: $SLURM_SUBMIT_HOST
+Running on node: $SLURM_NODELIST
+Number of nodes: $SLURM_NNODES
+Number of tasks: $SLURM_NTASKS
+CPUs per task: $SLURM_CPUS_PER_TASK
+Memory allocated: 64GB
+Start time: $(date)
+===============================
+"
 
 . /etc/profile
 source /smallwork/$USER/myenv1/bin/activate
