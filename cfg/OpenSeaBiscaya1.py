@@ -24,7 +24,7 @@ USERCUTS = 0 # 0=no user cuts, 1=user cuts on
 
 USERCUTSTRENGTH = 1.0 # how deep must user cuts be to be separated?
 
-HEURISTIC = 1000 # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC = 100 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
