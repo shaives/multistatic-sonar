@@ -6,7 +6,7 @@ from math import *
 
 # Euclidean distance between two points
 def d(x1, y1, z1, x2, y2, z2):
-    return sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)
+    return sqrt((0.25*x1-0.25*x2)**2 + (0.25*y1-0.25*y2)**2 + (0.0215983*z1-0.0215983*z2)**2)
 
 # target strength piecewise linear function g(cos(theta))
 def g_cos(theta, instance):
@@ -73,6 +73,14 @@ def check_line(x1, y1, z1, x2, y2, z2, ocean):
     - int: If the line intersects with an obstacle, returns 1.
     - None: If the line does not intersect with any obstacle.
     """
+
+    x1 = 0.25*x1
+    y1 = 0.25*y1
+    z1 = 0.0215983*z1
+    x2 = 0.25*x2
+    y2 = 0.25*y2
+    z2 = 0.0215983*z2
+
 
     ListOfPoints = []
     ListOfPoints.append((x1, y1, z1))
@@ -225,8 +233,6 @@ def reading_in_ocean_data(instance):
 
 def compute_coverage_triples(instance, ocean, ocean_surface):
 
-    print(f"Computing coverage")
-
     detection_prob = {}
 
     start_time_coverage = time.time()
@@ -287,3 +293,69 @@ def compute_coverage_triples(instance, ocean, ocean_surface):
     print(f"it took {(end_time_coverage - start_time_coverage):.2f} sec to get {len(detection_prob)} detection triples")
 
     return detection_prob
+
+def compute_rowsum_detection_prob(instance, ocean, ocean_surface, detection_prob):
+
+    start_time_prob = time.time()
+
+    # Do we even need the detection_prob_rowsum_r?
+
+    detection_prob_rowsum_r = {}
+
+    max = -10e+10
+    min = 10e+10
+
+    for tar_x, tar_y, tar_z in ocean:
+        for theta in range(0,180,instance.STEPS): # target angle
+            for rx_x, rx_y, rx_z in ocean_surface:
+                sum = 0
+                for tx_x, tx_y, tx_z in ocean_surface:
+
+                    if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
+
+                detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = sum
+
+                if sum > max:
+                    max = sum
+                if sum < min:
+                    min = sum
+
+    if instance.BOUND == 1:
+            
+        for tar_x, tar_y, tar_z in ocean:
+            for theta in range(0,180,instance.STEPS): # target angle
+                for rx_x, rx_y, rx_z in ocean_surface:
+
+                    detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
+
+
+    detection_prob_rowsum_s = {}
+
+    for tar_x, tar_y, tar_z in ocean:
+        for theta in range(0,180,instance.STEPS): # target angle
+            for tx_x, tx_y, tx_z in ocean_surface:
+                sum = 0
+                for rx_x, rx_y, rx_z in ocean_surface:
+                    if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
+                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
+
+                detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = sum
+
+                if sum > max:
+                    max = sum
+                if sum < min:
+                    min = sum
+
+    if instance.BOUND == 1:
+        for tar_x, tar_y, tar_z in ocean:
+            for theta in range(0,180,instance.STEPS): # target angle
+                for tx_x, tx_y, tx_z in ocean_surface:
+
+                    detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = max
+
+    end_time_prob = time.time()
+
+    print(f"It took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
+
+    return detection_prob_rowsum_r, detection_prob_rowsum_s
