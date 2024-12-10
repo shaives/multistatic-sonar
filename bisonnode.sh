@@ -23,7 +23,7 @@ Running on node: $SLURM_NODELIST
 Number of nodes: $SLURM_NNODES
 Number of tasks: $SLURM_NTASKS
 CPUs per task: $SLURM_CPUS_PER_TASK
-Memory allocated: 64GB
+Memory allocated: $(($SLURM_MEM_PER_NODE/1024))GB
 Start time: $(date)
 ===============================
 "
