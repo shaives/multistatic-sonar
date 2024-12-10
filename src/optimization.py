@@ -114,6 +114,9 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
         solver = SolverFactory(solver_name)
     
     if instance.GOAL == 0:  # minimize cost for deployed equipment
+
+        print(f"Running heuristic for cost minimization = 0")
+
         best_obj = float('inf')
         best_sources = {}
         best_receivers = {}
@@ -139,9 +142,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             
             if results.solver.status == SolverStatus.ok:
                 obj = value(model.objective)
-                fixed_sources = {(tx_x, tx_y, tx_z): 1 
-                for tx_x, tx_y, tx_z in model.ocean_surface 
-                    if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
+                fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.ocean_surface if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
                 
                 # Fix sources and free receivers
                 for tx_x, tx_y, tx_z in model.ocean_surface:
@@ -159,9 +160,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 
                 if results.solver.status == SolverStatus.ok:
                     obj = value(model.objective)
-                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 
-                    for rx_x, rx_y, rx_z in model.ocean_surface 
-                        if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
+                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
                     
                     if old_obj > obj:
                         old_obj = obj
@@ -222,11 +221,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
 
                 if results.solver.termination_condition != TerminationCondition.infeasible:
                     obj = value(model.objective)
-                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 
-                                       
-                        for rx_x, rx_y, rx_z in model.ocean_surface 
-
-                            if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
+                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
 
                     if best_obj > obj:
 
@@ -236,6 +231,8 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                         print(f"  Found new incumbent at iteration {round} with objective value {obj}")
     
     else:  # GOAL = 1 (maximize coverage)
+
+        print(f"Running heuristic for coverage maximization = 1")
 
         best_obj = -1
         best_sources = []
@@ -352,11 +349,14 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     # Create solver interface
     if solver_name == 'cplex':
         solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
+        solver.options['timelimit'] = instance.TIMELIMIT_HEURISTIC
     elif solver_name == 'gurobi':    
         solver = SolverFactory(solver_name)
+        solver.options['TimeLimit'] = instance.TIMELIMIT_HEURISTIC
 
     # Apply heuristic if requested
     if instance.HEURISTIC > 0:
+
         best_obj, best_sources, best_receivers = apply_heuristic(model, instance, ocean_surface, solver_name)
         print(f"Heuristic found solution with objective value: {best_obj}")
         
@@ -390,15 +390,14 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     
     # Set solver parameters
     if solver.name == 'cplex':
-        solver.options['writelog'] = 1 
-        solver.options['logfile'] = outdir + '/cplex.log'
         solver.options['timelimit'] = instance.TIMELIMIT
+        solver.options['mip_start'] = 1
         solver.options['mipgap'] = 0.0
         solver.options['workmem'] = instance.RAM
-        #solver.options['populatelim'] = 5
         solver.options['mip.pool.capacity'] = 5
     elif solver.name == 'gurobi':
         solver.options['TimeLimit'] = instance.TIMELIMIT
+        solver.options['WarmStart'] = 1
         solver.options['MIPGap'] = 0.0
         solver.options['PoolSolutions'] = 5
         solver.options['PoolSearchMode'] = 2
@@ -414,7 +413,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         model.write(outdir + "/bison_relaxed.lp", io_options={'symbolic_solver_labels': True})
 
         start_time = time.time()
-        results = solver.solve(model, tee=True)
+        results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
 
         print(f"Root relaxation objective value: {value(model.objective)}")
@@ -427,7 +426,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         model.write(outdir + "/bison_cuts.lp", io_options={'symbolic_solver_labels': True})
 
         start_time = time.time()
-        results = solver.solve(model, tee=True)
+        results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
 
         print(f"Root + cuts objective value: {value(model.objective)}")
@@ -435,7 +434,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     else:  # full solve
 
         start_time = time.time()
-        results = solver.solve(model, tee=True)
+        results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
         
         if (results.solver.status == SolverStatus.ok and results.solver.termination_condition == TerminationCondition.optimal):
