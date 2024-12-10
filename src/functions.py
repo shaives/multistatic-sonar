@@ -6,7 +6,7 @@ from math import *
 
 # Euclidean distance between two points
 def d(x1, y1, z1, x2, y2, z2):
-    return sqrt((x1-x2)**2 + (y1-y2)**2 + (z1-z2)**2)
+    return sqrt((0.25*x1-0.25*x2)**2 + (0.25*y1-0.25*y2)**2 + (0.0215983*z1-0.0215983*z2)**2)
 
 # target strength piecewise linear function g(cos(theta))
 def g_cos(theta, instance):
@@ -73,6 +73,14 @@ def check_line(x1, y1, z1, x2, y2, z2, ocean):
     - int: If the line intersects with an obstacle, returns 1.
     - None: If the line does not intersect with any obstacle.
     """
+
+    x1 = 0.25*x1
+    y1 = 0.25*y1
+    z1 = 0.0215983*z1
+    x2 = 0.25*x2
+    y2 = 0.25*y2
+    z2 = 0.0215983*z2
+
 
     ListOfPoints = []
     ListOfPoints.append((x1, y1, z1))
