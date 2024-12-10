@@ -3,16 +3,16 @@ INPUT = "GMRTv3_3_20170309topo.asc" # file name of ocean floor data
 
 RAM = 16*8192	# 0=use disk, 1=use RAM for storing data
 
-X = 20 # number of pixels in x-direction
-Y = 20 # number of pixels in y-direction
+X = 10 # number of pixels in x-direction
+Y = 10 # number of pixels in y-direction
 
-GOAL = 0 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
+GOAL = 1 # optimization goal: cover all pixels, minimize cost for deployed equipment (0) or deploy equipment, maximize coverage (1)
 
-S = 12 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
-R = 4 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
+S = 4 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
+R = 12 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
-S_DEPTH = {'tx_d1' : 19.8, 'tx_d2' : 53.3, 'tx_d3' : 91.4 , 'tx_d4' : 152.4} # depth of source (in meters)
-R_DEPTH = {'rx_d1' : 19.8, 'rx_d2' : 53.3, 'rx_d3' : 91.4 , 'rx_d4' : 152.4} # depth of receiver (in meters)
+S_DEPTH = {'tx_d1' : 90, 'tx_d2' : 200, 'tx_d3' : 400 , 'tx_d4' : 1000} # depth of source (in feet)
+R_DEPTH = {'rx_d1_1' : 50, 'rx_d1_2' : 150, 'rx_d1_3' : 300, 'rx_d2_1' : 90, 'rx_d2_2' : 400, 'rx_d2_1' : 1500} # depth of receiver (in feet)
 
 rho_0 = 3 # range of the day (in pixels)
 rb = 0.4 # pulse length (for direct-blast-effect) (in pixels)
