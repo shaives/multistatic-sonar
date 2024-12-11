@@ -138,21 +138,9 @@ with st.sidebar:
             "Fast (100 rounds)",
             "Medium (250 rounds)",
             "Thorough (1000 rounds)",
-            "Custom"
         ],
         help="Heuristic search intensity. More rounds may find better solutions but take longer."
     )
-    
-    # Custom heuristic rounds if selected
-    if heuristic == "Custom":
-        heuristic_rounds = st.number_input(
-            "Heuristic Rounds",
-            min_value=0,
-            max_value=10000,
-            value=1000,
-            step=100,
-            help="Number of heuristic search rounds. 0 disables heuristic."
-        )
     
     # Time limit selection
     time_limit_unit = st.selectbox(
@@ -261,7 +249,6 @@ if 'last_area_size' not in st.session_state:
     st.session_state.last_area_size = area_size
 elif st.session_state.last_area_size != area_size:
     st.session_state.last_clicked = None
-    st.session_state.custom_area = None
     st.session_state.coordinate_area = None
     st.session_state.last_area_size = area_size
     st.rerun()
@@ -284,10 +271,6 @@ if submit:
         "heuristic": heuristic,
         "time_limit": time_limit
     }
-    
-    # Add heuristic rounds if custom
-    if heuristic == "Custom":
-        job_data["heuristic_rounds"] = heuristic_rounds
     
     # Add type-specific data
     if opt_type == "Cost":

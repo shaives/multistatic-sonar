@@ -73,7 +73,7 @@ def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 20
         'nrows': resolution,
         'xllcorner': min_lon,
         'yllcorner': min_lat,
-        'cellsize': resolution,
+        'cellsize': res_size,
         'nodata_value': -9999
     }
     
