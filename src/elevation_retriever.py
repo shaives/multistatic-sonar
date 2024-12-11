@@ -57,7 +57,7 @@ def get_elevation_single_point(lat: float, lon: float, retry_count: int = 3) -> 
     print(f"All APIs failed for lat={lat}, lon={lon}")
     return None
 
-def get_elevation_grid(corners: Dict, resolution: float = 0.01) -> Tuple[np.ndarray, Dict]:
+def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 2025.37) -> Tuple[np.ndarray, Dict]:
     """
     Get elevation data for area defined by corners.
     """
@@ -67,14 +67,10 @@ def get_elevation_grid(corners: Dict, resolution: float = 0.01) -> Tuple[np.ndar
     min_lon = corners['nw']['lon']
     max_lon = corners['se']['lon']
     
-    # Calculate grid dimensions
-    lat_points = int((max_lat - min_lat) / resolution) + 1
-    lon_points = int((max_lon - min_lon) / resolution) + 1
-    
     # Create metadata
     metadata = {
-        'ncols': lon_points,
-        'nrows': lat_points,
+        'ncols': resolution,
+        'nrows': resolution,
         'xllcorner': min_lon,
         'yllcorner': min_lat,
         'cellsize': resolution,
@@ -82,22 +78,22 @@ def get_elevation_grid(corners: Dict, resolution: float = 0.01) -> Tuple[np.ndar
     }
     
     # Create empty grid
-    grid = np.zeros((lat_points, lon_points))
+    grid = np.zeros((resolution, resolution))
     
     # Calculate total points and estimated time
-    total_points = lat_points * lon_points
+    total_points = resolution * resolution
     estimated_time = total_points * 0.5  # 0.5 seconds per point
-    print(f"Retrieving elevation data for {lat_points}x{lon_points} grid ({total_points} points)")
+    print(f"Retrieving elevation data for {resolution}x{resolution} grid ({total_points} points)")
     print(f"Estimated time: {estimated_time/60:.1f} minutes")
     
     start_time = time.time()
     points_completed = 0
     
     # Get elevation data
-    for i in range(lat_points):
-        for j in range(lon_points):
-            lat = max_lat - i * resolution  # Start from top
-            lon = min_lon + j * resolution
+    for i in range(resolution):
+        for j in range(resolution):
+            lat = max_lat - i * res_size / (2025.37 * 60)  # Start from top
+            lon = min_lon + j * res_size / (2025.37 * 60)  # Start from left
             
             elevation = get_elevation_single_point(lat, lon)
             grid[i, j] = elevation if elevation is not None else metadata['nodata_value']

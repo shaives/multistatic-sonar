@@ -7,7 +7,7 @@ from streamlit_folium import st_folium
 from folium.plugins import Draw
 from datetime import datetime
 from src.elevation_retriever import *
-from src.output_func import create_config_file
+from src.outputs import create_config_file
 
 
 def create_box_coordinates(center_lat, center_lon, size_nm):
@@ -87,8 +87,6 @@ if 'zoom' not in st.session_state:
     st.session_state.zoom = 5
 if 'center' not in st.session_state:
     st.session_state.center = [62.0, -7.0]
-if 'custom_area' not in st.session_state:
-    st.session_state.custom_area = None
 if 'coordinate_area' not in st.session_state:
     st.session_state.coordinate_area = None
 
@@ -101,16 +99,16 @@ with st.sidebar:
     
     # Input fields based on optimization type
     if opt_type == "Cost":
-        tx_price = st.number_input("TX Buoy Price ($)", value=10000)
-        rx_price = st.number_input("RX Buoy Price ($)", value=1000)
+        tx_price = st.number_input("TX Buoy Price ($)", value=12000)
+        rx_price = st.number_input("RX Buoy Price ($)", value=800)
     else:
-        tx_buoys = st.number_input("TX Buoys", value=3)
-        rx_buoys = st.number_input("RX Buoys", value=9)
+        tx_buoys = st.number_input("TX Buoys", value=4)
+        rx_buoys = st.number_input("RX Buoys", value=12)
 
     # Area selection  
     area_size = st.radio(
         "Area Size:",
-        ["10x10 NM", "30x30 NM", "100x100 NM", "Custom", "Coordinates"]
+        ["10x10 NM", "30x30 NM", "60x60 NM", "Coordinates"]
     )
     
     # Coordinate inputs if selected
@@ -138,8 +136,8 @@ with st.sidebar:
         [
             "None",
             "Fast (100 rounds)",
-            "Medium (1000 rounds)",
-            "Thorough (5000 rounds)",
+            "Medium (250 rounds)",
+            "Thorough (1000 rounds)",
             "Custom"
         ],
         help="Heuristic search intensity. More rounds may find better solutions but take longer."
@@ -193,42 +191,8 @@ with st.sidebar:
 # Initialize map
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom)
 
-# Add drawing controls if in custom mode
-if area_size == "Custom":
-    draw = Draw(
-        draw_options={
-            'rectangle': True,
-            'polyline': False,
-            'circle': False,
-            'polygon': False,
-            'marker': False,
-            'circlemarker': False,
-            'rectangle': {
-                'shapeOptions': {
-                    'color': '#FF6B00',
-                    'fillColor': '#FF6B00',
-                    'fillOpacity': 0.2
-                }
-            }
-        },
-        edit_options={'edit': False}
-    )
-    m.add_child(draw)
-
-    # Draw the stored custom area in orange if it exists
-    if st.session_state.custom_area:
-        coords = st.session_state.custom_area['geometry']['coordinates'][0]
-        folium.Polygon(
-            locations=[[p[1], p[0]] for p in coords],  # Flip coordinates for folium
-            color='#FF6B00',
-            fill=True,
-            fillColor='#FF6B00',
-            fillOpacity=0.2,
-            popup="Custom Area"
-        ).add_to(m)
-
 # Add rectangles based on area type
-if area_size in ["10x10 NM", "30x30 NM", "100x100 NM"] and st.session_state.last_clicked:
+if area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and st.session_state.last_clicked:
     coords = st.session_state.last_clicked
     size = int(area_size.split('x')[0])
     box_coords = create_box_coordinates(coords['lat'], coords['lng'], size)
@@ -281,7 +245,7 @@ if map_data.get("center"):
 
 # Handle map clicks for predefined sizes
 if (map_data["last_clicked"] and 
-    area_size in ["10x10 NM", "30x30 NM", "100x100 NM"] and 
+    area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and 
     map_data["last_clicked"] != st.session_state.last_clicked):
     
     st.session_state.last_clicked = map_data["last_clicked"]
@@ -305,103 +269,61 @@ elif st.session_state.last_area_size != area_size:
 # Handle form submission
 if submit:
     # Check if an area was selected/drawn
-    area_selected = (
-        (area_size == "Coordinates" and st.session_state.coordinate_area is not None) or
-        (area_size == "Custom" and st.session_state.custom_area is not None) or
-        (area_size in ["10x10 NM", "30x30 NM", "100x100 NM"] and st.session_state.last_clicked is not None)
-    )
+    area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and st.session_state.last_clicked is not None
     
-    if not area_selected:
-        st.error("Please select or draw an area before submitting!")
+    # Create job directory with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    job_dir = f"bison_job_{timestamp}"
+    os.makedirs(job_dir, exist_ok=True)
+    
+    # Collect all data
+    job_data = {
+        "optimization_type": opt_type,
+        "timestamp": datetime.now().isoformat(),
+        "area_size": area_size,
+        "heuristic": heuristic,
+        "time_limit": time_limit
+    }
+    
+    # Add heuristic rounds if custom
+    if heuristic == "Custom":
+        job_data["heuristic_rounds"] = heuristic_rounds
+    
+    # Add type-specific data
+    if opt_type == "Cost":
+        job_data.update({
+            "tx_price": tx_price,
+            "rx_price": rx_price
+        })
     else:
-        # Create job directory with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        job_dir = f"bison_job_{timestamp}"
-        os.makedirs(job_dir, exist_ok=True)
+        job_data.update({
+            "tx_buoys": tx_buoys,
+            "rx_buoys": rx_buoys
+        })
+    
+    # Get corners and retrieve elevation data based on area type
+    corners = None
         
-        # Collect all data
-        job_data = {
-            "optimization_type": opt_type,
-            "timestamp": datetime.now().isoformat(),
-            "area_size": area_size,
-            "heuristic": heuristic,
-            "time_limit": time_limit
+    if st.session_state.last_clicked:
+        size = int(area_size.split('x')[0])
+        center = st.session_state.last_clicked
+        box_coords = create_box_coordinates(center["lat"], center["lng"], size)
+        corners = {
+            "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
+            "se": {"lat": box_coords[2][0], "lon": box_coords[2][1]}
         }
-        
-        # Add heuristic rounds if custom
-        if heuristic == "Custom":
-            job_data["heuristic_rounds"] = heuristic_rounds
-        
-        # Add type-specific data
-        if opt_type == "Cost":
-            job_data.update({
-                "tx_price": tx_price,
-                "rx_price": rx_price
-            })
-        else:
-            job_data.update({
-                "tx_buoys": tx_buoys,
-                "rx_buoys": rx_buoys
-            })
-        
-        # Get corners and retrieve elevation data based on area type
-        corners = None
-        
-        if area_size == "Coordinates":
-            corners = {
-                "nw": {"lat": nw_lat, "lon": nw_lon},
-                "se": {"lat": se_lat, "lon": se_lon}
+        job_data.update({
+            "center_point": {"lat": center["lat"], "lon": center["lng"]},
+            "size_nm": size,
+            "corners": {
+                "nw": corners["nw"],
+                "ne": {"lat": box_coords[1][0], "lon": box_coords[1][1]},
+                "se": corners["se"],
+                "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
             }
-            job_data.update({
-                "coordinates": {
-                    "nw": {"lat": nw_lat, "lon": nw_lon},
-                    "se": {"lat": se_lat, "lon": se_lon},
-                    "sw": {"lat": se_lat, "lon": nw_lon},
-                    "ne": {"lat": nw_lat, "lon": se_lon}
-                }
-            })
-            
-        elif area_size == "Custom" and st.session_state.custom_area:
-            coords = st.session_state.custom_area['geometry']['coordinates'][0]
-            lats = [p[1] for p in coords]
-            lons = [p[0] for p in coords]
-            corners = {
-                "nw": {"lat": max(lats), "lon": min(lons)},
-                "se": {"lat": min(lats), "lon": max(lons)}
-            }
-            job_data.update({
-                "custom_area": st.session_state.custom_area,
-                "corners": {
-                    "sw": {"lat": min(lats), "lon": min(lons)},
-                    "ne": {"lat": max(lats), "lon": max(lons)},
-                    "nw": corners["nw"],
-                    "se": corners["se"]
-                }
-            })
-            
-        elif st.session_state.last_clicked:
-            size = int(area_size.split('x')[0])
-            center = st.session_state.last_clicked
-            box_coords = create_box_coordinates(center["lat"], center["lng"], size)
-            corners = {
-                "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
-                "se": {"lat": box_coords[2][0], "lon": box_coords[2][1]}
-            }
-            job_data.update({
-                "center_point": {"lat": center["lat"], "lon": center["lng"]},
-                "size_nm": size,
-                "corners": {
-                    "nw": corners["nw"],
-                    "ne": {"lat": box_coords[1][0], "lon": box_coords[1][1]},
-                    "se": corners["se"],
-                    "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
-                }
-            })
+        })
         
         try:
-            # Create timestamped job directory name
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            job_dir = f"bison_job_{timestamp}"
             
             # Create full path in outputs directory
             full_job_path = os.path.join("outputs", job_dir)
@@ -409,7 +331,7 @@ if submit:
             
             with st.spinner('Retrieving elevation data and creating configuration...'):
                 # Get elevation data
-                grid, metadata = get_elevation_grid(corners, resolution=0.01)
+                grid, metadata = get_elevation_grid(corners, resolution=10, res_size=size*2025.37/10)
                 
                 # Save elevation data
                 elevation_file = os.path.join(full_job_path, 'elevation.asc')
