@@ -7,7 +7,8 @@ from streamlit_folium import st_folium
 from folium.plugins import Draw
 from datetime import datetime
 from src.elevation_retriever import *
-from src.outputs import create_config_file
+
+from bison import bison
 
 
 def create_box_coordinates(center_lat, center_lon, size_nm):
@@ -268,9 +269,33 @@ if submit:
         "optimization_type": opt_type,
         "timestamp": datetime.now().isoformat(),
         "area_size": area_size,
-        "heuristic": heuristic,
-        "time_limit": time_limit
     }
+
+    # Add area-specific data
+    if area_size == "10x10":
+        job_data.update({
+            "x": 10,
+            "y": 10
+        })
+    elif area_size == "30x30":
+        job_data.update({
+            "x": 10,
+            "y": 10
+        })
+    else:
+        job_data.update({
+            "x": 16,
+            "y": 16
+        })
+
+    job_data.update({
+        "x": 10,
+        "y": 10,
+        "heuristic": heuristic,
+        "ram": 8 * 8192,
+        "time_limit": time_limit,
+        "time_limit_heuristic": time_limit / 50
+    })
     
     # Add type-specific data
     if opt_type == "Cost":
@@ -284,6 +309,13 @@ if submit:
             "rx_buoys": rx_buoys
         })
     
+    job_data.update({
+            "rho0": 8000,
+            "rb": 750,
+            "rx_depths": [90, 200, 400, 1000],
+            "tx_depths": [50, 150, 300, 90, 400, 1500]
+        })
+
     # Get corners and retrieve elevation data based on area type
     corners = None
         
@@ -311,6 +343,7 @@ if submit:
             # Create full path in outputs directory
             full_job_path = os.path.join("outputs", job_dir)
             os.makedirs(full_job_path, exist_ok=True)
+            job_file = os.path.join(full_job_path, 'job_config.json')
             
             with st.spinner('Retrieving elevation data and creating configuration...'):
                 # Get elevation data
@@ -319,28 +352,27 @@ if submit:
                 # Save elevation data
                 elevation_file = os.path.join(full_job_path, 'elevation.asc')
                 save_as_esri_ascii(grid, metadata, elevation_file)
+
+                job_data.update({
+                "job_dir": job_dir,
+                "job_file": 'job_config.json',
+                })
                 
                 # Save job data
-                job_file = os.path.join(full_job_path, 'job_config.json')
+
                 with open(job_file, 'w') as f:
                     json.dump(job_data, f, indent=4)
                 
-                config_file = os.path.join(full_job_path, 'config.py')
-                create_config_file(
-                    job_data,
-                    job_dir,
-                    'elevation.asc',
-                    metadata,  # Pass the metadata from get_elevation_grid
-                    filename=config_file
-                )
-                
                 st.success(f"""Job submitted successfully! 
                 Files saved to outputs/{job_dir}:
-                - elevation.asc (Elevation data, {metadata['ncols']}x{metadata['nrows']} grid)
+                - elevation.asc (Elevation data)
                 - job_config.json (Job configuration)
-                - config.py (Optimization configuration)
                 
-                Grid dimensions: {metadata['ncols']} x {metadata['nrows']} points""")
+                Grid dimensions: {job_data.x} x {job_data.y} points""")
                 
         except Exception as e:
             st.error(f"Error preparing job files: {str(e)}")
+
+    print(f"Starting BISON job")
+
+    bison(name=job_dir)

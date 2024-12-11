@@ -1,11 +1,12 @@
 #! /usr/bin/python3
 
-# running python3.10 and cplex 22.1.1
+# running python3.10 and cplex 22.1.1 or gurobi
 import sys
 import time
 import os
 import shutil
 import importlib
+import json
 
 from math import *
 from datetime import datetime
@@ -19,29 +20,57 @@ from src.optimization import *
 # --- let's start
 # ---------------------------------------------------
 
-if __name__ == '__main__':
+def bison(area = None, name = None):
 
-    try:
+    if area is not None:
 
-        filename = sys.argv[1]
+        if bison_job is not None:
 
-        filepath = os.path.join("cfg", filename + '.py')
+            print("Please provide only one argument.")
 
-        if os.path.isfile(filepath):
+        try:
 
-            instance = importlib.import_module("cfg." + filename)
-            start_time = time.time()
+            filename = sys.argv[1]
 
-    except IndexError:
+            filepath = os.path.join("cfg", filename + '.py')
 
-        print("File not found in the 'cfg' folder.")
-    
-    # creating an output directory and copy config file
-    if not os.path.exists('outputs'):
-        os.mkdir('outputs')
-    outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
-    os.mkdir(outdir)
-    shutil.copy2("./cfg/" + filename + ".py", outdir)
+            if os.path.isfile(filepath):
+
+                instance = importlib.import_module("cfg." + filename)
+                start_time = time.time()
+
+        except IndexError:
+
+            print("File not found in the 'cfg' folder.")
+        
+        # creating an output directory and copy config file
+        if not os.path.exists('outputs'):
+            os.mkdir('outputs')
+        outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
+        os.mkdir(outdir)
+        shutil.copy2("./cfg/" + filename + ".py", outdir)
+
+    elif name is not None:
+
+        try:
+
+            # Read JSON file
+            with open('outputs/' + name + 'job_config.json', 'r') as file:
+                bison_job = json.load('job_config.json')
+
+            outdir = 'outputs/' + bison_job['job_dir']
+            job_path = 'outputs/' + name + '/' + 'job_config.json'
+
+            if os.path.isfile(job_path):
+
+                instance = importlib.import_module(job_path)
+                start_time = time.time()
+
+        except IndexError:
+
+            print("File not found in the folder.")
+
+        start_time = time.time()
 
     # redirect output to screen and logfile
     sys.stdout = Logger(outdir) 
@@ -85,7 +114,7 @@ if __name__ == '__main__':
     print(f"")
 
     print(f"Called")
-    
+    exit()
     # ---------------------------------------------------
     # --- read ocean elevation data file
     # ---------------------------------------------------
@@ -142,3 +171,7 @@ if __name__ == '__main__':
     # ---------------------------------------------------
 
     output_solution(model, instance, ocean_surface, ocean, detection_prob, map, min_depth, max_depth, outdir, start_time)
+
+if __name__ == '__main__':
+
+    bison()
