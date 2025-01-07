@@ -313,7 +313,8 @@ if submit:
             "rho0": 8000,
             "rb": 750,
             "rx_depths": [90, 200, 400, 1000],
-            "tx_depths": [50, 150, 300, 90, 400, 1500]
+            "tx_depths": [50, 150, 300, 90, 400, 1500],
+            "frequency": 8000
         })
 
     # Get corners and retrieve elevation data based on area type
