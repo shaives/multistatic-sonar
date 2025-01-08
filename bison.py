@@ -20,57 +20,31 @@ from src.optimization import *
 # --- let's start
 # ---------------------------------------------------
 
-def bison(area = None, name = None):
+def main():
 
-    if area is not None:
+    try:
 
-        if bison_job is not None:
+        filename = sys.argv[1]
 
-            print("Please provide only one argument.")
+        filepath = os.path.join("cfg", filename + '.py')
 
-        try:
+        if os.path.isfile(filepath):
 
-            filename = sys.argv[1]
+            instance = importlib.import_module("cfg." + filename)
+            start_time = time.time()
 
-            filepath = os.path.join("cfg", filename + '.py')
+    except IndexError:
 
-            if os.path.isfile(filepath):
+        print("File not found in the 'cfg' folder.")
+    
+    # creating an output directory and copy config file
+    if not os.path.exists('outputs'):
+        os.mkdir('outputs')
+    outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
+    os.mkdir(outdir)
+    shutil.copy2("./cfg/" + filename + ".py", outdir)
 
-                instance = importlib.import_module("cfg." + filename)
-                start_time = time.time()
-
-        except IndexError:
-
-            print("File not found in the 'cfg' folder.")
-        
-        # creating an output directory and copy config file
-        if not os.path.exists('outputs'):
-            os.mkdir('outputs')
-        outdir = 'outputs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '_' + filename
-        os.mkdir(outdir)
-        shutil.copy2("./cfg/" + filename + ".py", outdir)
-
-    elif name is not None:
-
-        try:
-
-            # Read JSON file
-            with open('outputs/' + name + 'job_config.json', 'r') as file:
-                bison_job = json.load('job_config.json')
-
-            outdir = 'outputs/' + bison_job['job_dir']
-            job_path = 'outputs/' + name + '/' + 'job_config.json'
-
-            if os.path.isfile(job_path):
-
-                instance = importlib.import_module(job_path)
-                start_time = time.time()
-
-        except IndexError:
-
-            print("File not found in the folder.")
-
-        start_time = time.time()
+    start_time = time.time()
 
     # redirect output to screen and logfile
     sys.stdout = Logger(outdir) 
@@ -164,14 +138,10 @@ def bison(area = None, name = None):
     model = create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob)
     
     print(f"Solve optimization model")
-    results = solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
+    solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
 
     # ---------------------------------------------------
     # --- output optimization model results
     # ---------------------------------------------------
 
     output_solution(model, instance, ocean_surface, ocean, detection_prob, map, min_depth, max_depth, outdir, start_time)
-
-if __name__ == '__main__':
-
-    bison()
