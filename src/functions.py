@@ -5,11 +5,15 @@ import time
 from math import *
 
 # Euclidean distance between two points
-def d(x1, y1, z1, x2, y2, z2):
-    return sqrt((0.25*x1-0.25*x2)**2 + (0.25*y1-0.25*y2)**2 + (0.0215983*z1-0.0215983*z2)**2)
+def d(x1, y1, z1, x2, y2, z2) -> float:
+
+    distance = sqrt((0.25*x1-0.25*x2)**2 + (0.25*y1-0.25*y2)**2 + (0.0215983*z1-0.0215983*z2)**2)
+    
+    return distance
 
 # target strength piecewise linear function g(cos(theta))
-def g_cos(theta, instance):
+def g_cos(theta, instance) -> list[float]:
+
     theta = np.asarray(theta)
     scalar_input = False
     if theta.ndim == 0:
@@ -38,7 +42,7 @@ def g_cos(theta, instance):
     
     return ret
 
-def g(alpha, instance):
+def g(alpha, instance) -> float:
 
     for i in range(len(instance.TS)-1):
         w_i = cos(instance.TS[i][0]/180.0*pi)
