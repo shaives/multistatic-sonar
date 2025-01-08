@@ -119,9 +119,6 @@ def main():
 
     detection_prob = compute_coverage_triples(instance, ocean, ocean_surface)
 
-    if len(instance.TS) == 0:
-        instance.STEPS = 180
-
     # ---------------------------------------------------
     # --- computing the rowsum in detection_prob
     # ---------------------------------------------------
