@@ -460,4 +460,4 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     model.write(outdir + "/bison_final.lp", io_options={'symbolic_solver_labels': True})
         
     print(f"Total solve time: {solve_time:.2f} seconds")
-    return results
+    return None
