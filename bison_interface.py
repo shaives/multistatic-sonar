@@ -1,14 +1,11 @@
 import streamlit as st
 import folium
-import json
 import os
 
 from streamlit_folium import st_folium
 from folium.plugins import Draw
 from datetime import datetime
 from src.elevation_retriever import *
-
-from bison import bison
 
 
 def create_box_coordinates(center_lat, center_lon, size_nm):
@@ -21,15 +18,6 @@ def create_box_coordinates(center_lat, center_lon, size_nm):
         [center_lat - half_size_deg, center_lon + half_size_deg],  # SE
         [center_lat - half_size_deg, center_lon - half_size_deg]   # SW
     ]
-
-def save_job_data(job_data):
-    """Save job data to a JSON file with timestamp"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"bison_job_{timestamp}.json"
-    
-    with open(filename, 'w') as f:
-        json.dump(job_data, f, indent=4)
-    return filename
 
 # Set page config
 st.set_page_config(layout="wide", page_title="BISON Rancher", page_icon="🦬")
@@ -257,123 +245,116 @@ elif st.session_state.last_area_size != area_size:
 # Handle form submission
 if submit:
     # Check if an area was selected/drawn
-    area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and st.session_state.last_clicked is not None
-    
-    # Create job directory with timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    job_dir = f"bison_job_{timestamp}"
-    os.makedirs(job_dir, exist_ok=True)
-    
-    # Collect all data
-    job_data = {
-        "optimization_type": opt_type,
-        "timestamp": datetime.now().isoformat(),
-        "area_size": area_size,
-    }
-
-    # Add area-specific data
-    if area_size == "10x10":
-        job_data.update({
-            "x": 10,
-            "y": 10
-        })
-    elif area_size == "30x30":
-        job_data.update({
-            "x": 10,
-            "y": 10
-        })
-    else:
-        job_data.update({
-            "x": 16,
-            "y": 16
-        })
-
-    job_data.update({
-        "x": 10,
-        "y": 10,
-        "heuristic": heuristic,
-        "ram": 8 * 8192,
-        "time_limit": time_limit,
-        "time_limit_heuristic": time_limit / 50
-    })
-    
-    # Add type-specific data
-    if opt_type == "Cost":
-        job_data.update({
-            "tx_price": tx_price,
-            "rx_price": rx_price
-        })
-    else:
-        job_data.update({
-            "tx_buoys": tx_buoys,
-            "rx_buoys": rx_buoys
-        })
-    
-    job_data.update({
-            "rho0": 8000,
-            "rb": 750,
-            "rx_depths": [90, 200, 400, 1000],
-            "tx_depths": [50, 150, 300, 90, 400, 1500],
-            "frequency": 8000
-        })
-
-    # Get corners and retrieve elevation data based on area type
-    corners = None
+    if area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and st.session_state.last_clicked is not None:
+        # Create job directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        job_dir = f"bison_job_{timestamp}"
         
-    if st.session_state.last_clicked:
-        size = int(area_size.split('x')[0])
-        center = st.session_state.last_clicked
-        box_coords = create_box_coordinates(center["lat"], center["lng"], size)
-        corners = {
-            "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
-            "se": {"lat": box_coords[2][0], "lon": box_coords[2][1]}
-        }
-        job_data.update({
-            "center_point": {"lat": center["lat"], "lon": center["lng"]},
-            "size_nm": size,
-            "corners": {
-                "nw": corners["nw"],
-                "ne": {"lat": box_coords[1][0], "lon": box_coords[1][1]},
-                "se": corners["se"],
-                "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
-            }
-        })
+        # Get area dimensions
+            # Add area-specific data
+        if area_size == "10x10 NM" or area_size == "30x30 NM":
+            x_dim = y_dim = resolution =  10  # Setting both dimensions to the area size
+            size = 10
+        elif area_size == "30x30 NM": 
+            x_dim = y_dim = resolution =  10  # Setting both dimensions to the area size
+            size = 30
+        elif area_size == "60x60 NM":
+            x_dim = y_dim = resolution = 16  # Setting both dimensions to the area size
+            size = 60
+
         
-        try:
+        # Get corners and retrieve elevation data based on area type
+        if st.session_state.last_clicked:
+            center = st.session_state.last_clicked
+            box_coords = create_box_coordinates(center["lat"], center["lng"], size)
             
-            # Create full path in outputs directory
-            full_job_path = os.path.join("outputs", job_dir)
-            os.makedirs(full_job_path, exist_ok=True)
-            job_file = os.path.join(full_job_path, 'job_config.json')
-            
-            with st.spinner('Retrieving elevation data and creating configuration...'):
-                # Get elevation data
-                grid, metadata = get_elevation_grid(corners, resolution=10, res_size=size*2025.37/10)
+            try:
+                # Create full path in outputs directory
+                full_job_path = os.path.join("outputs", job_dir)
+                os.makedirs(full_job_path, exist_ok=True)
                 
-                # Save elevation data
-                elevation_file = os.path.join(full_job_path, 'elevation.asc')
-                save_as_esri_ascii(grid, metadata, elevation_file)
+                with st.spinner('Retrieving elevation data and creating configuration...'):
+                    # Get elevation data
+                    grid, metadata = get_elevation_grid(
+                        {
+                            "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
+                            "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
+                        }, 
+                        resolution = resolution, 
+                        res_size = size * 2025.37 / resolution
+                    )
+                    
+                    # Save elevation data
+                    elevation_file = os.path.join(full_job_path, 'elevation.asc')
+                    save_as_esri_ascii(grid, metadata, elevation_file)
 
-                job_data.update({
-                "job_dir": job_dir,
-                "job_file": 'job_config.json',
-                })
-                
-                # Save job data
+                    # Create configuration file content
+                    config_content = [
+                        f'DIR        = "Instances/{job_dir}/"           # directory where to find input and store output files',
+                        f'INPUT      = "elevation.asc"            # file name of ocean floor data',
+                        f'RAM        = {16 * 8192}                     # RAM allocation in MB',
+                        f'X          = {x_dim}                         # number of pixels in x-direction',
+                        f'Y          = {y_dim}                         # number of pixels in y-direction',
+                        f'GOAL       = {0 if opt_type == "Cost" else 1}                          # optimization goal: cover all pixels, minimize cost (0), or maximize coverage (1)',
+                        '',
+                        '# Equipment parameters',
+                    ]
+                    
+                    # Add equipment-specific parameters
+                    if opt_type == "Cost":
+                        config_content.extend([
+                            f'S          = {tx_price}               # cost for each deployed source',
+                            f'R          = {rx_price}                 # cost for each deployed receiver',
+                        ])
+                    else:
+                        config_content.extend([
+                            f'S          = {tx_buoys}                    # number of deployed sources',
+                            f'R          = {rx_buoys}                    # number of deployed receivers',
+                        ])
+                    
+                    # Add physical parameters
+                    config_content.extend([
+                        '',
+                        '# Physical parameters',
+                        f'RHO_0      = 8000                # range of the day (in yards)',
+                        f'RB         = 750                 # pulse length (for direct-blast-effect) (in yards)',
+                        'FREQ       = 8000                # frequency of the sonar (in Hz)',
+                        '',
+                        '# Depth configuration',
+                        'RX_DEPTHS  = [90, 200, 400, 1000]',
+                        'TX_DEPTHS  = [50, 150, 300, 90, 400, 1500]',
+                        '',
+                        '# Target strength configuration',
+                        'TS         = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)]          # target strength (in pixels), added to range of the day'
+                    ])
+                    
+                    # Add optimization parameters
+                    config_content.extend([
+                        '',
+                        '# Optimization parameters',
+                        'STEPS               = 30         # step size for discretization of half-circle',
+                        'BOUND               = 1          # 0=individual bound per row, 1=min/max over all rows',
+                        'USERCUTS            = 0          # 0=no user cuts, 1=user cuts on',
+                        'USERCUTSTRENGTH     = 1.0        # how deep must user cuts be to be separated?',
+                        f'HEURISTIC           = {heuristic}       # 0=no heuristic, >0: with heuristic, number of rounds',
+                        'SOLVE               = 2          # 0=only root relaxation, 1=root+cuts, 2=to the end',
+                        f'TIMELIMIT           = {time_limit}      # time limit in seconds',
+                        f'TIMELIMIT_HEURISTIC = {int(time_limit/50)}        # time limit in seconds'
+                    ])
+                    
+                    # Save configuration file
+                    config_file = os.path.join(full_job_path, 'config.py')
+                    with open(config_file, 'w') as f:
+                        f.write('\n'.join(config_content))
+                    
+                    st.success(f"""Job submitted successfully! 
+                    Files saved to outputs/{job_dir}:
+                    - elevation.asc (Elevation data)
+                    - config.py (BISON configuration)
+                    
+                    Grid dimensions: {x_dim} x {y_dim} points""")
+                    
+            except Exception as e:
+                st.error(f"Error preparing job files: {str(e)}")
 
-                with open(job_file, 'w') as f:
-                    json.dump(job_data, f, indent=4)
-                
-                st.success(f"""Job submitted successfully! 
-                Files saved to outputs/{job_dir}:
-                - elevation.asc (Elevation data)
-                - job_config.json (Job configuration)
-                
-                Grid dimensions: {job_data.x} x {job_data.y} points""")
-                
-        except Exception as e:
-            st.error(f"Error preparing job files: {str(e)}")
-
-    print(f"Starting BISON job")
-
-    bison(name=job_dir)
+        print(f"Starting BISON job")
