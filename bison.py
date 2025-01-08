@@ -132,9 +132,11 @@ def main():
     # ---------------------------------------------------
 
     print(f"Create optimization model")
+
     model = create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob)
     
     print(f"Solve optimization model")
+    
     solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
 
     # ---------------------------------------------------
