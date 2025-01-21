@@ -87,8 +87,8 @@ def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 20
     # Get elevation data
     for i in range(resolution):
         for j in range(resolution):
-            lat = corners['nw']['lat'] - i * res_size / (2025.37 * 60)  # Start from top
-            lon = corners['nw']['lon'] + j * res_size / (2025.37 * 60)  # Start from left
+            lat = corners['nw']['lat'] - i * res_size / (2025.37 * 60) - (0.5 * res_size / (2025.37 * 60))  # Start from top
+            lon = corners['nw']['lon'] + j * res_size / (2025.37 * 60) + (0.5 * res_size / (2025.37 * 60))  # Start from left
             
             elevation = get_elevation_single_point(lat, lon)
             grid[i, j] = elevation if elevation is not None else metadata['nodata_value']
