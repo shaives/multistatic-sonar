@@ -92,7 +92,7 @@ print(f"Called")
 # --- read ocean elevation data file
 # ---------------------------------------------------
 
-map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight = reading_in_ocean_data(instance)
+map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight, resolution = reading_in_ocean_data(instance)
 
 # ---------------------------------------------------
 # --- create outputs
@@ -110,16 +110,15 @@ create_map_dat(instance, map, outdir)
 
 # plot function g
 create_plot_func_g(instance, outdir)
-print(f"{min_depth}, {max_depth}, {depth_layer_hight}")
-exit()
+
 # ---------------------------------------------------
 # --- compute coverage
 # ---------------------------------------------------
 
 print(f"Computing coverage")
 
-detection_prob = compute_coverage_triples(instance, ocean, ocean_surface)
-
+detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution)
+exit()
 # ---------------------------------------------------
 # --- computing the rowsum in detection_prob
 # ---------------------------------------------------

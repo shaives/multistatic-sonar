@@ -5,9 +5,9 @@ import time
 from math import *
 
 # Euclidean distance between two points
-def d(x1, y1, z1, x2, y2, z2) -> float:
+def d(x1, y1, z1, x2, y2, z2, depth_layer_hight, resolution) -> float:
 
-    distance = sqrt((0.25*x1-0.25*x2)**2 + (0.25*y1-0.25*y2)**2 + (0.0215983*z1-0.0215983*z2)**2)
+    distance = sqrt((resolution * x1 - resolution * x2)**2 + (resolution * y1 - resolution * y2)**2 + (depth_layer_hight * z1 - depth_layer_hight * z2)**2)
     
     return distance
 
@@ -57,7 +57,7 @@ def g(alpha, instance) -> float:
 
     return 0
 
-def check_line(x1, y1, z1, x2, y2, z2, ocean):
+def check_line(x1, y1, z1, x2, y2, z2, ocean, depth_layer_hight, resolution):
 
     """
     Check if a line intersects with any obstacle in the map.
@@ -78,12 +78,12 @@ def check_line(x1, y1, z1, x2, y2, z2, ocean):
     - None: If the line does not intersect with any obstacle.
     """
 
-    x1 = 0.25*x1
-    y1 = 0.25*y1
-    z1 = 0.0215983*z1
-    x2 = 0.25*x2
-    y2 = 0.25*y2
-    z2 = 0.0215983*z2
+    x1 = resolution * x1
+    y1 = resolution * y1
+    z1 = depth_layer_hight * z1
+    x2 = resolution * x2
+    y2 = resolution * y2
+    z2 = depth_layer_hight * z2
 
 
     ListOfPoints = []
@@ -241,13 +241,15 @@ def reading_in_ocean_data(instance):
 
                     ocean[x,y,z] = 1
                    
-    return map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight
+    return map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight, resolution
 
-def compute_coverage_triples(instance, ocean, ocean_surface):
+def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution):
 
     detection_prob = {}
 
     start_time_coverage = time.time()
+
+    # for now in here but will be removed in the future.
 
     if len(instance.TS) == 0: # without TS
 
@@ -258,9 +260,9 @@ def compute_coverage_triples(instance, ocean, ocean_surface):
                 for rx_x, rx_y, rx_z in ocean_surface: # receiver
 
                     # no obstacles between source-target and target-receiver, and source-reiver	
-                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
+                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean, depth_layer_hight, resolution) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean, depth_layer_hight, resolution) == None:
 
-                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) <= instance.rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
+                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= instance.rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
                             
                             detection_prob[tar_x, tar_y, tar_z, 0, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
@@ -270,14 +272,18 @@ def compute_coverage_triples(instance, ocean, ocean_surface):
 
             for tx_x, tx_y, tx_z in ocean_surface: # source
 
-                if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of source and target (direct blast effect)
+                # here we have to add the depth of the source
+
+                if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude of source and target in same position
                     
                     for rx_x, rx_y, rx_z in ocean_surface: # receiver
 
-                        if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude equalitar_y of receiver and target (direct blast effect)
+                        # here we have to add the depth of the receiver
+
+                        if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude of reciever and target in same position
                         
                             # no obstacles between source-target and target-receiver, and source-reiver
-                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
+                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean, depth_layer_hight, resolution) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean, depth_layer_hight, resolution) == None:
 
                                 sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
                                 sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
@@ -288,13 +294,13 @@ def compute_coverage_triples(instance, ocean, ocean_surface):
                                     my_sin_theta = sin(my_theta)
                                     my_cos_theta = cos(my_theta)
                                       
-                                    if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) + 2*instance.rb: # check for outside direct-blast-effect
+                                    if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*instance.rb: # check for outside direct-blast-effect
 
                                         alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
 
                                         #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
-                                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
+                                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= (instance.rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
 
                                             detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
