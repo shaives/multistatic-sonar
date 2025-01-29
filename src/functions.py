@@ -205,7 +205,7 @@ def reading_in_ocean_data(instance):
                 depth_layer_hight = max(15, int(abs(max_depth / 10)))
 
         # for each line in the data
-        for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
+        for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100][::-1]):
             
             # for each element in the line
             for x, element in enumerate(re.split("\s+", line_str)[:instance.X]):
