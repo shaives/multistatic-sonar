@@ -57,7 +57,7 @@ def g(alpha, instance) -> float:
 
     return 0
 
-def check_line(x1, y1, z1, x2, y2, z2, ocean, depth_layer_hight, resolution):
+def check_line(x1, y1, z1, x2, y2, z2, ocean):
 
     """
     Check if a line intersects with any obstacle in the map.
@@ -254,7 +254,7 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                 for rx_x, rx_y, rx_z in ocean_surface: # receiver
 
                     # no obstacles between source-target and target-receiver, and source-reiver	
-                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean, depth_layer_hight, resolution) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean, depth_layer_hight, resolution) == None:
+                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
                         if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= instance.rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*instance.rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
                             
@@ -277,7 +277,7 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                         if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude of reciever and target in same position
                         
                             # no obstacles between source-target and target-receiver, and source-reiver
-                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean, depth_layer_hight, resolution) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean, depth_layer_hight, resolution) == None:
+                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
                                 sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
                                 sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
