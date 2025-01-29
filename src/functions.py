@@ -181,8 +181,9 @@ def reading_in_ocean_data(instance):
 
     latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
     longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
-    data_delta = float(re.search("cellsize (.*)", elevation_data).group(1))
+    resolution = float(re.search("cellsize (.*)", elevation_data).group(1))
 
+    # remove header
     elevation_data = re.split("\n+", elevation_data)[6:-1]
 
     if (nrows != len(elevation_data)+1):
@@ -195,9 +196,19 @@ def reading_in_ocean_data(instance):
     ocean_surface = {}
     min_depth = -11022.0
     max_depth = 0.0
+    depth_layer_hight = 50
 
-    # depth up to 400m in 40m steps
+    # depth up to 500m / 1640feet in 50m / 164feet steps
     for z in range(0, 11, 1):
+
+        # dynamic dapth layer hight to max depth or 500m / 1640feet
+        if z == 1:
+            print(f"max depth: {max_depth}")
+
+            if max_depth > -500:
+
+                # an suitable Periscope depth is 15m / 50ft and is a minimum depth layer hight depding on the max depth
+                depth_layer_hight = max(15, int(abs(max_depth / 10)))
 
         # for each line in the data
         for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100]):
@@ -209,18 +220,16 @@ def reading_in_ocean_data(instance):
 
                 # if needed, here has to be the code for avg of depths
 
-                if z == 0 and element < 0:
+                if z == 0:
 
-                    ocean_surface[x,y,z] = 1
+                    map[x,y] = element
 
-                # if element < step * -40m
-                if element < z*-40:
+                    if element < 0:
 
-                    ocean[x,y,z] = 1
+                        ocean_surface[x,y,z] = 1
 
-                    if z == 0:
-
-                        if element > min_depth and element < 0:
+                        # has to be 2 if statements if it is the case we have the max depth in the first element
+                        if element > min_depth:
 
                             min_depth = element
 
@@ -228,12 +237,11 @@ def reading_in_ocean_data(instance):
 
                             max_depth = element
 
-                if z == 0:
-                    
-                    map[x,y] = element
+                if element < z * -1 * depth_layer_hight:
 
-
-    return map, ocean, ocean_surface, min_depth, max_depth
+                    ocean[x,y,z] = 1
+                   
+    return map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight
 
 def compute_coverage_triples(instance, ocean, ocean_surface):
 
