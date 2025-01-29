@@ -38,14 +38,14 @@ def create_latex_map(instance, map, minval, maxval, outdir):
         for y in range(0,instance.Y):
 
             if map[x,y] < 0.0:
-                val = int(30 + 70 * map[x,y] / minval)
-                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
-                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
+                val = int(30 + 70 * (1 - (map[x,y] / maxval)))
+                file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x+1)+","+str(y+1)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x+1)+","+str(y+1)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
             else:
-                val = int(30 + 70 * map[x,y] / maxval)
-                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x)+","+str(y)+")};\n")
-                file.write("    \\node at (axis cs:"+str(x)+","+str(y)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
+                val = int(30 + 70 * map[x,y] / 8848)
+                file.write("    \\addplot[only marks,mark=square*,green!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x+1)+","+str(y+1)+")};\n")
+                file.write("    \\node at (axis cs:"+str(x+1)+","+str(y+1)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
     file.write("	\\end{axis}\n")
     file.write("\\end{tikzpicture}\n")
