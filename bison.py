@@ -99,7 +99,6 @@ map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight, resolution =
 # ---------------------------------------------------
 
 # output latex map
-# Seams not to work with the current version of the code
 create_latex_map(instance, map, min_depth, max_depth, outdir)
 
 # output ocean pixels
@@ -118,7 +117,7 @@ create_plot_func_g(instance, outdir)
 print(f"Computing coverage")
 
 detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution)
-exit()
+
 # ---------------------------------------------------
 # --- computing the rowsum in detection_prob
 # ---------------------------------------------------
@@ -126,7 +125,7 @@ exit()
 print(f"Computing detection prob")
 
 detection_prob_rowsum_r, detection_prob_rowsum_s = compute_rowsum_detection_prob(instance, ocean, ocean_surface, detection_prob)
-
+exit()
 # ---------------------------------------------------
 # --- set up & compute optimization model
 # ---------------------------------------------------
