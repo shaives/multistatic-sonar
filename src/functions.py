@@ -78,14 +78,6 @@ def check_line(x1, y1, z1, x2, y2, z2, ocean, depth_layer_hight, resolution):
     - None: If the line does not intersect with any obstacle.
     """
 
-    x1 = resolution * x1
-    y1 = resolution * y1
-    z1 = depth_layer_hight * z1
-    x2 = resolution * x2
-    y2 = resolution * y2
-    z2 = depth_layer_hight * z2
-
-
     ListOfPoints = []
     ListOfPoints.append((x1, y1, z1))
 
@@ -182,6 +174,8 @@ def reading_in_ocean_data(instance):
     latitude = float(re.search("xllcorner (.*)", elevation_data).group(1))
     longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
     resolution = float(re.search("cellsize (.*)", elevation_data).group(1))
+
+    resolution = resolution * 111000
 
     # remove header
     elevation_data = re.split("\n+", elevation_data)[6:-1]
