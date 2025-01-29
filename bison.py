@@ -99,6 +99,7 @@ map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight = reading_in_
 # ---------------------------------------------------
 
 # output latex map
+# Seams not to work with the current version of the code
 create_latex_map(instance, map, min_depth, max_depth, outdir)
 
 # output ocean pixels
