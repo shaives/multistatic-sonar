@@ -38,7 +38,7 @@ def create_latex_map(instance, map, minval, maxval, outdir):
         for y in range(0,instance.Y):
 
             if map[x,y] < 0.0:
-                val = int(30 + 70 * (1 - (map[x,y] / maxval)))
+                val = int(30 + 70 * (map[x,y] / maxval))
                 file.write("    \\addplot[only marks,mark=square*,blue!"+str(val)+",opacity=.7,mark size=0.42cm] coordinates{("+str(x+1)+","+str(y+1)+")};\n")
                 file.write("    \\node at (axis cs:"+str(x+1)+","+str(y+1)+") [above,font=\\scriptsize] {"+str(int(map[x,y]))+"};\n")
 
@@ -204,11 +204,11 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
         for x in range(0, instance.X):
             for y in range(0, instance.Y):
                 if map[x,y] < 0.0:
-                    val = int(30 + 70 * map[x,y] / min_depth)
+                    val = int(30 + 70 * map[x,y] / max_depth)
                     file.write(f"    \\addplot[only marks,mark=square*,blue!{val},opacity=.7,mark size=0.42cm] coordinates{{({x},{y})}};\n")
                     file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(map[x,y])}}};\n")
                 else:
-                    val = int(30 + 70 * map[x,y] / max_depth)
+                    val = int(30 + 70 * map[x,y] / 8848)
                     file.write(f"    \\addplot[only marks,mark=square*,green!{val},opacity=.7,mark size=0.42cm] coordinates{{({x},{y})}};\n")
                     file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(map[x,y])}}};\n")
 
