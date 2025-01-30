@@ -125,7 +125,7 @@ detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, depth_
 print(f"Computing detection prob")
 
 detection_prob_rowsum_r, detection_prob_rowsum_s = compute_rowsum_detection_prob(instance, ocean, ocean_surface, detection_prob)
-exit()
+
 # ---------------------------------------------------
 # --- set up & compute optimization model
 # ---------------------------------------------------
