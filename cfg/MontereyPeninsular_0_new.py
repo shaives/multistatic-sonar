@@ -17,7 +17,7 @@ R_DEPTH = {'rx_d1_1' : 50, 'rx_d1_2' : 150, 'rx_d1_3' : 300, 'rx_d2_1' : 90, 'rx
 rho_0 = 8000 # range of the day (in yards)
 rb = 750 # pulse length cw 0.5s (for direct-blast-effect) (in yards)
 
-TS = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
+TS = [(0.0,2000),(40.0,4000),(70.0,6000),(90.0,8000),(110.0,6000),(120.0,0),(140.0,4000),(160.0,-4000),(180.0,4000)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
 #TS = [] # if TS is an empty list, the target angle is not considered
 STEPS = 30 # step size for discretization of half-circle (eg., "10" degrees gives 0,10,20,...,170)
 
