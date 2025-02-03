@@ -82,12 +82,15 @@ def create_plot_func_g(instance, outdir):
     if len(instance.TS) > 0:
 
         # Data for plotting
+        # Angle in radian
         t = np.arange(0.0, 2.0*pi, 0.01)
-        tt = t/180.0*pi
+        # Angle in degree
+        tt = t*180/pi
+
         s = g_cos(t, instance)
 
         fig, ax = plt.subplots()
-        ax.plot(t, s)
+        ax.plot(tt, s)
 
         ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
                     title='Target Strength as a Function of Degree')
@@ -98,9 +101,7 @@ def create_plot_func_g(instance, outdir):
 
         fig, ax = plt.subplots(subplot_kw=dict(polar=True))
 
-        # is this even working?
-        #plt.subplot(111,projection='polar')
-        ax.plot(tt, s)
+        ax.plot(t, s)
         ax.grid()
         ax.set(xlabel='angle (deg)', ylabel='TS (pixels)',
                     title='Target Strength as a Function of Degree')
