@@ -281,7 +281,7 @@ if submit:
                             "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
                         }, 
                         resolution = resolution, 
-                        res_size = size * 2025.37 / resolution
+                        res_size = size * 1852 / resolution
                     )
                     
                     # Save elevation data

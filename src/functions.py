@@ -175,7 +175,11 @@ def reading_in_ocean_data(instance):
     longitude = float(re.search("yllcorner (.*)", elevation_data).group(1))
     resolution = float(re.search("cellsize (.*)", elevation_data).group(1))
 
-    resolution = resolution * 111000
+    # convert resolution from degrees to meters (1 degree = 111000 meters)
+    # until we use maps from the interface we use 1852m as a factor
+    resolution = 1852
+
+    print(f"resolution: {resolution}")
 
     # remove header
     elevation_data = re.split("\n+", elevation_data)[6:-1]

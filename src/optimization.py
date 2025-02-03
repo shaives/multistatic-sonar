@@ -139,8 +139,9 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             # Solve for sources
             print("Solving for sources")
             results = solver.solve(model, tee=True)
-            
+            print(f"Solver status: {results.solver.status}")
             if results.solver.status == SolverStatus.ok:
+
                 obj = value(model.objective)
                 fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.ocean_surface if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
                 
