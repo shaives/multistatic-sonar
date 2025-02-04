@@ -26,8 +26,9 @@ def g_cos(theta, instance) -> list[float]:
         for i in range(len(instance.TS)-1):
             w_i = cos(instance.TS[i][0]/180.0*pi)
             w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
-            s_i = instance.TS[i][1]
-            s_ip1 = instance.TS[i+1][1]
+            # change yards to meters
+            s_i = instance.TS[i][1] * 0.9144
+            s_ip1 = instance.TS[i+1][1] * 0.9144
             alpha = cos(x)
 
             if w_i >= alpha and alpha >= w_ip1:
@@ -47,8 +48,9 @@ def g(alpha, instance) -> float:
     for i in range(len(instance.TS)-1):
         w_i = cos(instance.TS[i][0]/180.0*pi)
         w_ip1 = cos(instance.TS[i+1][0]/180.0*pi)
-        s_i = instance.TS[i][1]
-        s_ip1 = instance.TS[i+1][1]
+        # change yards to meters
+        s_i = instance.TS[i][1] * 0.9144
+        s_ip1 = instance.TS[i+1][1] * 0.9144
 
         if w_i >= alpha and alpha >= w_ip1:
             return ( s_i + ( (s_ip1 - s_i) * (alpha - w_i) ) / ( w_ip1 - w_i ) )

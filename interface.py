@@ -124,9 +124,9 @@ with st.sidebar:
         "Heuristic Mode:",
         [
             "None",
-            "Fast (100 rounds)",
-            "Medium (250 rounds)",
-            "Thorough (1000 rounds)",
+            "50",
+            "100",
+            "200",
         ],
         help="Heuristic search intensity. More rounds may find better solutions but take longer."
     )

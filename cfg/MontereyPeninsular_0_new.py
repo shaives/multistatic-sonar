@@ -17,7 +17,7 @@ R_DEPTH = {'rx_d1_1' : 50, 'rx_d1_2' : 150, 'rx_d1_3' : 300, 'rx_d2_1' : 90, 'rx
 rho_0 = 8000 # range of the day (in yards)
 rb = 750 # pulse length cw 0.5s (for direct-blast-effect) (in yards)
 
-TS = [(0.0,2000),(40.0,4000),(70.0,6000),(90.0,8000),(110.0,6000),(120.0,0),(140.0,4000),(160.0,-4000),(180.0,4000)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
+TS = [(0.0,2000),(10.0,0),(20.0,2000),(30.0,3000),(40.0,4000),(50.0,2000),(60.0,4000),(70.0,6000),(80.0,6000),(90.0,10000),(100.0,8000),(110.0,6000),(120.0,0),(130.0,2000),(140.0,4000),(150.0,-3000),(160.0,-2000),(170.0,-2500),(180.0,2000)] # target strength (in pixels), added to the range of the day, 0 (degree) = bow/stern, 90 (degree) = beam 
 #TS = [] # if TS is an empty list, the target angle is not considered
 STEPS = 30 # step size for discretization of half-circle (eg., "10" degrees gives 0,10,20,...,170)
 
@@ -27,7 +27,7 @@ USERCUTS = 0 # 0=no user cuts, 1=user cuts on
 
 USERCUTSTRENGTH = 1.0 # how deep must user cuts be to be separated?
 
-HEURISTIC = 200 # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC = 50 # 0=no heuristic, >0: with heuristic, number of rounds
 
 SOLVE = 2 # 0=only root relaxation, 1=root+cuts, 2=to the end (optimality or timelimit reached)
 
