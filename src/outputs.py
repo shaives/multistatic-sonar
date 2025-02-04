@@ -156,13 +156,13 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
         file.write("rx ry\n")
         for rx_x, rx_y, rx_z in ocean_surface:
             if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
-                file.write(f"{rx_x} {rx_y}\n")
+                file.write(f"{rx_x} {rx_y} {rx_z}\n")
 
     with open(outdir + "/solution-s.csv", "w+") as file:
         file.write("sx sy\n")
         for tx_x, tx_y, tx_z in ocean_surface:
             if value(model.s[tx_x, tx_y, tx_z]) > 0.999:
-                file.write(f"{tx_x} {tx_y}\n")
+                file.write(f"{tx_x} {tx_y} {tx_z}\n")
 
     # ---------------------------------------------------
     # --- compute coverage value per pixel
