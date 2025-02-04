@@ -3,7 +3,7 @@
 #SBATCH --nodes=1                               # How many nodes do you want to use? You probably want 1.
 #SBATCH --ntasks=1                              # How many tasks (i.e. processors w/ distributed memory) do you want? You probably want 1 here unless using MPI.
 #SBATCH --cpus-per-task=32                      # How many cores (i.e. threads w/ shared memory) per processor do you want?
-#SBATCH --mem=64GB                              # How much memory do you want total? (You can use suffixes: M=MB, G=GB, T=TB.)
+#SBATCH --mem=128GB                              # How much memory do you want total? (You can use suffixes: M=MB, G=GB, T=TB.)
 #SBATCH --nodelist=compute-3-[1,5,7,9,11]       # Which nodes do you want to use?
 #SBATCH --exclusive                             # Don't share nodes with other users
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
