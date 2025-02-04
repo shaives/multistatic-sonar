@@ -325,7 +325,7 @@ if submit:
                         'TX_DEPTHS  = [50, 150, 300, 90, 400, 1500]',
                         '',
                         '# Target strength configuration',
-                        'TS         = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)]          # target strength (in pixels), added to range of the day'
+                        'TS         = [(0.0,2000),(10.0,0),(20.0,2000),(30.0,3000),(40.0,4000),(50.0,2000),(60.0,4000),(70.0,6000),(80.0,6000),(90.0,10000),(100.0,8000),(110.0,6000),(120.0,0),(130.0,2000),(140.0,4000),(150.0,-3000),(160.0,-2000),(170.0,-2500),(180.0,2000)]          # target strength (in yards), added to range of the day'
                     ])
                     
                     # Add optimization parameters
