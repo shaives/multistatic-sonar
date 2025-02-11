@@ -110,13 +110,14 @@ def create_plot_func_g(instance, outdir):
         fig.savefig(outdir+"/g_cos_theta_polar.png")
         #plt.show()
 
-def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, min_depth, max_depth, outdir, start_time):
+def output_solution(model, instance, ocean, tx_buoy, rx_buoy, detection_prob, map, min_depth, max_depth, outdir, start_time):
     """
     Output the solution in various formats
     Parameters:
         model: Pyomo model
         instance: Problem instance
-        ocean_surface: Dictionary of surface coordinates
+        tx_buoy: Dictionary of transmitter buoy coordinates
+        rx_buoy: Dictionary of receiver buoy coordinates
         ocean: Dictionary of ocean points
         detection_prob: Dictionary of detection probabilities
         map: Dictionary or 2D array with depth values
@@ -128,15 +129,15 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
     # ---------------------------------------------------
     # --- output solution on screen
     # ---------------------------------------------------
-    print("Source locations:")
-    for tx_x, tx_y, tx_z in ocean_surface:
+    print("Source locations (x, y, z):")
+    for tx_x, tx_y, tx_z in tx_buoy:
         if value(model.s[tx_x, tx_y, tx_z]) > 0.999:
-            print(f"  ({tx_x}, {tx_y})")
+            print(f"  ({tx_x}, {tx_y}, {tx_z})")
 
-    print("Receiver locations:")
-    for rx_x, rx_y, rx_z in ocean_surface:
+    print("Receiver locations (x, y, z):")
+    for rx_x, rx_y, rx_z in rx_buoy:
         if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
-            print(f"  ({rx_x}, {rx_y})")
+            print(f"  ({rx_x}, {rx_y}, {rx_z})")
 
     if instance.GOAL == 1 and hasattr(model, 'c'):
         print("Covered ocean pixels:")
@@ -153,14 +154,14 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
     # --- output solution to files
     # ---------------------------------------------------
     with open(outdir + "/solution-r.csv", "w+") as file:
-        file.write("rx ry\n")
-        for rx_x, rx_y, rx_z in ocean_surface:
+        file.write("rx ry rz\n")
+        for rx_x, rx_y, rx_z in rx_buoy:
             if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
                 file.write(f"{rx_x} {rx_y} {rx_z}\n")
 
     with open(outdir + "/solution-s.csv", "w+") as file:
-        file.write("sx sy\n")
-        for tx_x, tx_y, tx_z in ocean_surface:
+        file.write("sx sy sz\n")
+        for tx_x, tx_y, tx_z in tx_buoy:
             if value(model.s[tx_x, tx_y, tx_z]) > 0.999:
                 file.write(f"{tx_x} {tx_y} {tx_z}\n")
 
@@ -226,17 +227,28 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
                 val = str(cov_val[tar_x, tar_y, tar_z])
                 file.write(f"    \\node at (axis cs:{tar_x},{tar_y}) [below,font=\\scriptsize] {{{val}}};\n")
 
-        # Plot sources and receivers
+        # Plot sources and receivers with depth labels
         file.write("    \\addplot[only marks,mark=*,red,mark size=0.20cm] table\n")
         file.write("         [\n")
         file.write("           x expr=\\thisrow{sx},\n")
         file.write("           y expr=\\thisrow{sy}\n")
         file.write("         ] {solution-s.csv};\n")
+
+        # Add depth labels for sources
+        for tx_x, tx_y, tx_z in tx_buoy:
+            if value(model.s[tx_x, tx_y, tx_z]) > 0.999:
+                file.write(f"    \\node at (axis cs:{tx_x},{tx_y}) [above right,red,font=\\tiny] {{z={tx_z}}};\n")
+
         file.write("    \\addplot[only marks,mark=triangle*,blue,mark size=0.20cm] table\n")
         file.write("         [\n")
         file.write("           x expr=\\thisrow{rx},\n")
         file.write("           y expr=\\thisrow{ry}\n")
         file.write("         ] {solution-r.csv};\n")
+
+        # Add depth labels for receivers
+        for rx_x, rx_y, rx_z in rx_buoy:
+            if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
+                file.write(f"    \\node at (axis cs:{rx_x},{rx_y}) [below right,blue,font=\\tiny] {{z={rx_z}}};\n")
 
         file.write("    \\end{axis}\n")
         file.write("\\end{tikzpicture}\n")
@@ -247,4 +259,4 @@ def output_solution(model, instance, ocean_surface, ocean, detection_prob, map, 
     # ---------------------------------------------------
     print(f"The total time spent is {(time.time()-start_time):.0f} seconds")
     print(f"Output written to '{outdir}'")
-    print("This is the end, my only friend, the end...")
+    print("Done.")
