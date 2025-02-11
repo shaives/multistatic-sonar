@@ -5,9 +5,9 @@ import time
 from math import *
 
 # Euclidean distance between two points
-def d(x1, y1, z1, x2, y2, z2, depth_layer_hight, resolution) -> float:
+def d(x1, y1, z1, x2, y2, z2) -> float:
 
-    distance = sqrt((resolution * x1 - resolution * x2)**2 + (resolution * y1 - resolution * y2)**2 + (depth_layer_hight * z1 - depth_layer_hight * z2)**2)
+    distance = sqrt((x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2)
     
     return distance
 
@@ -194,6 +194,8 @@ def reading_in_ocean_data(instance):
     map = {}
     ocean = {}
     ocean_surface = {}
+    tx_buoy = {}
+    rx_buoy = {}
     min_depth = -11022.0
     max_depth = 0.0
     depth_layer_hight = 50
@@ -228,6 +230,14 @@ def reading_in_ocean_data(instance):
 
                         ocean_surface[x,y,z] = 1
 
+                        for tx_z_feet in instance.TX_DEPTHS:
+
+                            tx_buoy[x, y, tx_z_feet] = 1
+
+                        for rx_z_feet in instance.RX_DEPTHS:
+
+                            rx_buoy[x, y, rx_z_feet] = 1
+
                         # has to be 2 if statements if it is the case we have the max depth in the first element
                         if element > min_depth:
 
@@ -241,9 +251,9 @@ def reading_in_ocean_data(instance):
 
                     ocean[x,y,z] = 1
                    
-    return map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight, resolution
+    return map, ocean, ocean_surface, tx_buoy, rx_buoy, min_depth, max_depth, depth_layer_hight, resolution
 
-def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution):
+def compute_coverage_triples(instance, ocean, ocean_surface, tx_buoy, rx_buoy, depth_layer_hight, resolution):
 
     # convert yards to meters
     rho_0 = instance.rho_0 * 0.9144
@@ -266,7 +276,7 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                     # no obstacles between source-target and target-receiver, and source-reiver	
                     if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
-                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
+                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) <= rho_0**2 and d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) + 2*rb: # check for inside range-of-day Cassini oval and outside direct-blast-effect
                             
                             detection_prob[tar_x, tar_y, tar_z, 0, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
@@ -274,45 +284,70 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
 
         for tar_x, tar_y, tar_z in ocean: # target
 
-            for tx_x, tx_y, tx_z in ocean_surface: # source
+            for tx_x, tx_y, tx_z_feet in tx_buoy: # source
 
-                for tx_z in instance.S_DEPTH.values():
+                # convert feet to meters and round to the nearest depth layer
+                tx_z = round(tx_z_feet * 0.3048 / depth_layer_hight)
 
-                    tx_z = tx_z * 0,3048
+                if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude of source and target in same position
+                    
+                    for rx_x, rx_y, rx_z_feet in rx_buoy: # receiver
 
-                    if (tx_x, tx_y, tx_z) != (tar_x, tar_y, tar_z): # exclude of source and target in same position
+                        # convert feet to meters and round to the nearest depth layer
+                        rx_z = round(rx_z_feet * 0.3048 / depth_layer_hight)
+
+                        if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude of reciever and target in same position
                         
-                        for rx_x, rx_y, rx_z in ocean_surface: # receiver
+                            # no obstacles between source-target and target-receiver, and source-reiver
+                            if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
+                            
+                                # convert everything to meters
+                                tx_x_m = tx_x * resolution
+                                tx_y_m = tx_y * resolution
+                                tx_z_m = tx_z_feet * 0.3048
 
-                            for rx_z in instance.R_DEPTH.values():
+                                rx_x_m = rx_x * resolution
+                                rx_y_m = rx_y * resolution
+                                rx_z_m = rx_z_feet * 0.3048
 
-                                rx_z = rx_z * 0,3048
+                                tar_x_m = tar_x * resolution
+                                tar_y_m = tar_y * resolution
+                                tar_z_m = tar_z * depth_layer_hight
 
-                                if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude of reciever and target in same position
-                                
-                                    # no obstacles between source-target and target-receiver, and source-reiver
-                                    if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
+                                sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
+                                sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
 
-                                        sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
-                                        sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
+                                min_alpha = float('inf')
+                                worst_theta = 0
 
-                                        for theta in range(0, 180, instance.STEPS): # target angle
+                                for theta in range(0, 180, instance.STEPS):
 
-                                            my_theta = theta / 180.0 * pi
-                                            my_sin_theta = sin(my_theta)
-                                            my_cos_theta = cos(my_theta)
-                                            
-                                            if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for outside direct-blast-effect
+                                    my_theta = theta / 180.0 * pi
+                                    my_sin_theta = sin(my_theta)
+                                    my_cos_theta = cos(my_theta)
+                                    
+                                    alpha = ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta) * sqrt_rx_tar
+                                    
+                                    if abs(alpha) < abs(min_alpha):
+                                        min_alpha = alpha
+                                        worst_theta = theta
 
-                                                alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
+                                # Then use only the worst theta for detection probability
+                                my_theta = worst_theta / 180.0 * pi
+                                my_sin_theta = sin(my_theta)
+                                my_cos_theta = cos(my_theta)
 
-                                                #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+                                if d(tx_x_m, tx_y_m, tx_z_m, tar_x_m, tar_y_m, tar_z_m) + d(rx_x_m, rx_y_m, rx_z_m, tar_x_m, tar_y_m, tar_z_m) >= d(tx_x_m, tx_y_m, tx_z_m, rx_x_m, rx_y_m, rx_z_m) + 2*rb: # check for outside direct-blast-effect
 
-                                                if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= (rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
+                                    alpha = min_alpha
 
-                                                    detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
+                                    #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
-                                                    #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+                                    if d(tx_x_m, tx_y_m, tx_z_m, tar_x_m, tar_y_m, tar_z_m) * d(rx_x_m, rx_y_m, rx_z_m, tar_x_m, tar_y_m, tar_z_m) <= (rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
+
+                                        detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z_feet, rx_x, rx_y, rx_z_feet] = 1 # sure detection
+
+                                        #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
 
     end_time_coverage = time.time()
 
