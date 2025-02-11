@@ -355,68 +355,62 @@ def compute_coverage_triples(instance, ocean, ocean_surface, tx_buoy, rx_buoy, d
 
     return detection_prob
 
-def compute_rowsum_detection_prob(instance, ocean, ocean_surface, detection_prob):
-
+def compute_rowsum_detection_prob(instance, ocean, tx_buoy, rx_buoy, detection_prob):
     start_time_prob = time.time()
 
-    # Do we even need the detection_prob_rowsum_r?
-
+    # Calculate detection probability row sums for receivers
     detection_prob_rowsum_r = {}
-
-    max = -10e+10
-    min = 10e+10
+    max_val = -10e+10
+    min_val = 10e+10
 
     for tar_x, tar_y, tar_z in ocean:
-        for theta in range(0,180,instance.STEPS): # target angle
-            for rx_x, rx_y, rx_z in ocean_surface:
-                sum = 0
-                for tx_x, tx_y, tx_z in ocean_surface:
-
+        for theta in range(0, 180, instance.STEPS):  # target angle
+            for rx_x, rx_y, rx_z in rx_buoy:
+                sum_val = 0
+                for tx_x, tx_y, tx_z in tx_buoy:
                     if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
-                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
+                        sum_val = sum_val + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-                detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = sum
+                detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = sum_val
 
-                if sum > max:
-                    max = sum
-                if sum < min:
-                    min = sum
+                if sum_val > max_val:
+                    max_val = sum_val
+                if sum_val < min_val:
+                    min_val = sum_val
 
+    # Apply bound if requested
     if instance.BOUND == 1:
-            
         for tar_x, tar_y, tar_z in ocean:
-            for theta in range(0,180,instance.STEPS): # target angle
-                for rx_x, rx_y, rx_z in ocean_surface:
+            for theta in range(0, 180, instance.STEPS):
+                for rx_x, rx_y, rx_z in rx_buoy:
+                    detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max_val
 
-                    detection_prob_rowsum_r[tar_x, tar_y, tar_z, theta, rx_x, rx_y, rx_z] = max
-
-
+    # Calculate detection probability row sums for sources
     detection_prob_rowsum_s = {}
 
     for tar_x, tar_y, tar_z in ocean:
-        for theta in range(0,180,instance.STEPS): # target angle
-            for tx_x, tx_y, tx_z in ocean_surface:
-                sum = 0
-                for rx_x, rx_y, rx_z in ocean_surface:
+        for theta in range(0, 180, instance.STEPS):  # target angle
+            for tx_x, tx_y, tx_z in tx_buoy:
+                sum_val = 0
+                for rx_x, rx_y, rx_z in rx_buoy:
                     if (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z) in detection_prob:
-                        sum = sum + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
+                        sum_val = sum_val + detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z]
 
-                detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = sum
+                detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = sum_val
 
-                if sum > max:
-                    max = sum
-                if sum < min:
-                    min = sum
+                if sum_val > max_val:
+                    max_val = sum_val
+                if sum_val < min_val:
+                    min_val = sum_val
 
+    # Apply bound if requested
     if instance.BOUND == 1:
         for tar_x, tar_y, tar_z in ocean:
-            for theta in range(0,180,instance.STEPS): # target angle
-                for tx_x, tx_y, tx_z in ocean_surface:
-
-                    detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = max
+            for theta in range(0, 180, instance.STEPS):
+                for tx_x, tx_y, tx_z in tx_buoy:
+                    detection_prob_rowsum_s[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z] = max_val
 
     end_time_prob = time.time()
-
     print(f"It took {(end_time_prob - start_time_prob):.2f} sec to calc detection prob")
 
     return detection_prob_rowsum_r, detection_prob_rowsum_s
