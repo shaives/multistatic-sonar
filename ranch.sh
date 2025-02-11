@@ -12,6 +12,7 @@
 #SBATCH --mail-user conrad.urban.gy@nps.edu
 #SBATCH --mail-type ALL                         # Send email on job start, end, and fail
 
+# Define the Areas for the job which you want to calculate
 ARGS=(MontereyPeninsular_0_new MontereyPeninsular_1_new)
 
 # Print job parameters to log file
