@@ -2,7 +2,7 @@ from pyomo.environ import *
 import time
 import random
 
-def create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob):
+def create_optimization_model(instance, ocean_surface, tx_buoy, rx_buoy, ocean, detection_prob_rowsum_s, detection_prob):
     # Create concrete model
     model = ConcreteModel()
     
@@ -11,15 +11,19 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
     model.ocean_surface = Set(initialize=list(ocean_surface.keys()))
     model.ocean = Set(initialize=list(ocean.keys()))
     model.theta_range = Set(initialize=list(range(0, 180, instance.STEPS)))
+
+    # Create sets for buoy locations including depth from the passed dictionaries
+    model.tx_buoy = Set(dimen=3, initialize=list(tx_buoy.keys()))
+    model.rx_buoy = Set(dimen=3, initialize=list(rx_buoy.keys()))
     
     # Create set for the detection keys from detection_prob_rowsum_s
     # These are 7-tuples (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z)
     model.detection_keys = Set(dimen=7, initialize=list(detection_prob_rowsum_s.keys()))
     
     # VARIABLES
-    # Sources and receivers are indexed by 3D coordinates from ocean_surface
-    model.s = Var(model.ocean_surface, domain=Binary)
-    model.r = Var(model.ocean_surface, domain=Binary)
+    # Sources and receivers are now indexed by tx_buoy and rx_buoy respectively
+    model.s = Var(model.tx_buoy, domain=Binary)
+    model.r = Var(model.rx_buoy, domain=Binary)
     
     # Coverage variable for GOAL=1, indexed by ocean coordinates
     if instance.GOAL == 1:
@@ -33,36 +37,49 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
     
     # OBJECTIVE
     if instance.GOAL == 0:
-        # Minimize deployment cost
         def obj_cost_rule(model):
-            return (sum(instance.S * model.s[loc] for loc in model.ocean_surface) +
-                   sum(instance.R * model.r[loc] for loc in model.ocean_surface))
+            return (sum(instance.S * model.s[loc] for loc in model.tx_buoy) +
+                   sum(instance.R * model.r[loc] for loc in model.rx_buoy))
         model.objective = Objective(rule=obj_cost_rule, sense=minimize)
     else:
-        # Maximize coverage
         def obj_coverage_rule(model):
             percentage = 100.0/len(ocean)
             return sum(percentage * model.c[loc] for loc in model.ocean)
         model.objective = Objective(rule=obj_coverage_rule, sense=maximize)
     
     # CONSTRAINTS
+    # One buoy per surface location constraints
+    def one_source_per_surface_rule(model, x, y):
+        surface_buoys = [loc for loc in model.tx_buoy if loc[0] == x and loc[1] == y]
+        return sum(model.s[loc] for loc in surface_buoys) <= 1
+    model.one_source_per_surface = Constraint(
+        ((x, y) for x, y, _ in model.ocean_surface),
+        rule=one_source_per_surface_rule
+    )
+    
+    def one_receiver_per_surface_rule(model, x, y):
+        surface_buoys = [loc for loc in model.rx_buoy if loc[0] == x and loc[1] == y]
+        return sum(model.r[loc] for loc in surface_buoys) <= 1
+    model.one_receiver_per_surface = Constraint(
+        ((x, y) for x, y, _ in model.ocean_surface),
+        rule=one_receiver_per_surface_rule
+    )
+
     if instance.GOAL == 1:
-        # Fix equipment quantities for coverage maximization
         def fix_sources_rule(model):
-            return sum(model.s[loc] for loc in model.ocean_surface) == instance.S
+            return sum(model.s[loc] for loc in model.tx_buoy) == instance.S
         model.fix_sources = Constraint(rule=fix_sources_rule)
         
         def fix_receivers_rule(model):
-            return sum(model.r[loc] for loc in model.ocean_surface) == instance.R
+            return sum(model.r[loc] for loc in model.rx_buoy) == instance.R
         model.fix_receivers = Constraint(rule=fix_receivers_rule)
     else:
-        # Ensure at least one source and receiver for cost minimization
         def min_sources_rule(model):
-            return sum(model.s[loc] for loc in model.ocean_surface) >= 1
+            return sum(model.s[loc] for loc in model.tx_buoy) >= 1
         model.min_sources = Constraint(rule=min_sources_rule)
         
         def min_receivers_rule(model):
-            return sum(model.r[loc] for loc in model.ocean_surface) >= 1
+            return sum(model.r[loc] for loc in model.rx_buoy) >= 1
         model.min_receivers = Constraint(rule=min_receivers_rule)
     
     # Coverage constraints
@@ -79,7 +96,6 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
         else:
             return expr >= 1
     
-    # Generate coverage constraint for each ocean point and angle
     model.coverage_constraints = Constraint(
         ((x, y, z, theta) for x, y, z in model.ocean for theta in model.theta_range),
         rule=coverage_rule
@@ -93,7 +109,7 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
         expr = (model.y[keys] - detection_prob_rowsum_s[keys] * model.s[source_loc])
         
         # Add receiver terms if they exist in detection_prob
-        for rx_x, rx_y, rx_z in model.ocean_surface:
+        for rx_x, rx_y, rx_z in model.rx_buoy:
             full_key = (tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z)
             if full_key in detection_prob:
                 expr += detection_prob[full_key] * model.r[(rx_x, rx_y, rx_z)]
@@ -104,8 +120,7 @@ def create_optimization_model(instance, ocean_surface, ocean, detection_prob_row
     
     return model
 
-def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
-
+def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
     print(f"Running {instance.HEURISTIC} rounds of heuristic")
     # Create solver interface
     if solver_name == 'cplex':
@@ -114,26 +129,24 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
         solver = SolverFactory(solver_name)
     
     if instance.GOAL == 0:  # minimize cost for deployed equipment
-
         print(f"Running heuristic for cost minimization = 0")
-
         best_obj = float('inf')
         best_sources = {}
         best_receivers = {}
         
         # PREQUEL
-        fixed_receivers = dict(ocean_surface)  # Start with all positions
+        fixed_receivers = dict(rx_buoy)  # Start with all positions
         old_obj = float('inf')
         
         while True:
             # Fix receivers and free sources
-            for rx_x, rx_y, rx_z in model.ocean_surface:
+            for rx_x, rx_y, rx_z in model.rx_buoy:
                 if (rx_x, rx_y, rx_z) in fixed_receivers:
                     model.r[rx_x, rx_y, rx_z].fix(1)
                 else:
                     model.r[rx_x, rx_y, rx_z].fix(0)
                     
-            for tx_x, tx_y, tx_z in model.ocean_surface:
+            for tx_x, tx_y, tx_z in model.tx_buoy:
                 model.s[tx_x, tx_y, tx_z].unfix()
             
             # Solve for sources
@@ -141,18 +154,18 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             results = solver.solve(model, tee=True)
             print(f"Solver status: {results.solver.status}")
             if results.solver.status == SolverStatus.ok:
-
                 obj = value(model.objective)
-                fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.ocean_surface if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
+                fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.tx_buoy 
+                               if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
                 
                 # Fix sources and free receivers
-                for tx_x, tx_y, tx_z in model.ocean_surface:
+                for tx_x, tx_y, tx_z in model.tx_buoy:
                     if (tx_x, tx_y, tx_z) in fixed_sources:
                         model.s[tx_x, tx_y, tx_z].fix(1)
                     else:
                         model.s[tx_x, tx_y, tx_z].fix(0)
                         
-                for rx_x, rx_y, rx_z in model.ocean_surface:
+                for rx_x, rx_y, rx_z in model.rx_buoy:
                     model.r[rx_x, rx_y, rx_z].unfix()
                 
                 # Solve for receivers
@@ -161,7 +174,8 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 
                 if results.solver.status == SolverStatus.ok:
                     obj = value(model.objective)
-                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
+                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.rx_buoy 
+                                     if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
                     
                     if old_obj > obj:
                         old_obj = obj
@@ -180,7 +194,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             # Add constraint for number of sources
             model.del_component('source_count_constraint')
             model.source_count_constraint = Constraint(
-                expr = sum(model.s[tx_x, tx_y, tx_z] for tx_x, tx_y, tx_z in model.ocean_surface) == number_of_sources
+                expr = sum(model.s[tx_x, tx_y, tx_z] for tx_x, tx_y, tx_z in model.tx_buoy) == number_of_sources
             )
             
             # LOOP HEURISTIC
@@ -190,51 +204,43 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 print(f"----------{round+1}-----------")
                 
                 while True:
-
                     fixed_sources = {}
-                    ocean_surface_list = list(ocean_surface.keys())
+                    tx_buoy_list = list(tx_buoy.keys())
 
                     while len(fixed_sources) < number_of_sources:
-
-                        tx_x, tx_y, tx_z = random.choice(ocean_surface_list)
-
+                        tx_x, tx_y, tx_z = random.choice(tx_buoy_list)
                         if (tx_x, tx_y, tx_z) not in fixed_sources:
-
                             fixed_sources[tx_x, tx_y, tx_z] = 1
 
                     if fixed_sources not in list_of_fixed_sources:
-
                         list_of_fixed_sources.append(fixed_sources)
                         break
 
                 # Fix sources and free receivers
-                for tx_x, tx_y, tx_z in model.ocean_surface:
-
+                for tx_x, tx_y, tx_z in model.tx_buoy:
                     if (tx_x, tx_y, tx_z) in fixed_sources:
                         model.s[tx_x, tx_y, tx_z].fix(1)
                     else:
                         model.s[tx_x, tx_y, tx_z].fix(0)
 
-                for rx_x, rx_y, rx_z in model.ocean_surface:
+                for rx_x, rx_y, rx_z in model.rx_buoy:
                     model.r[rx_x, rx_y, rx_z].unfix()
                     
                 results = solver.solve(model, tee=True)
 
                 if results.solver.termination_condition != TerminationCondition.infeasible:
                     obj = value(model.objective)
-                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
+                    fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.rx_buoy 
+                                     if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
 
                     if best_obj > obj:
-
                         best_obj = obj
                         best_receivers = fixed_receivers
                         best_sources = fixed_sources
                         print(f"  Found new incumbent at iteration {round} with objective value {obj}")
     
     else:  # GOAL = 1 (maximize coverage)
-
         print(f"Running heuristic for coverage maximization = 1")
-
         best_obj = -1
         best_sources = []
         best_receivers = []
@@ -245,17 +251,14 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             
             while True:
                 fixed_sources = {}
-                ocean_surface_list = list(ocean_surface.keys())
+                tx_buoy_list = list(tx_buoy.keys())
 
                 while len(fixed_sources) < instance.S:
-
-                    tx_x, tx_y, tx_z = random.choice(ocean_surface_list)
-
+                    tx_x, tx_y, tx_z = random.choice(tx_buoy_list)
                     if (tx_x, tx_y, tx_z) not in fixed_sources:
                         fixed_sources[tx_x, tx_y, tx_z] = 1
 
                 if fixed_sources not in list_of_fixed_sources:
-
                     list_of_fixed_sources.append(fixed_sources)
                     break
             
@@ -263,50 +266,45 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             old_obj = -1
             
             while True:
-
                 # Fix sources and free receivers
-                for tx_x, tx_y, tx_z in model.ocean_surface:
-
+                for tx_x, tx_y, tx_z in model.tx_buoy:
                     if (tx_x, tx_y, tx_z) in fixed_sources:
                         model.s[tx_x, tx_y, tx_z].fix(1)
                     else:
                         model.s[tx_x, tx_y, tx_z].fix(0)
 
-                for rx_x, rx_y, rx_z in model.ocean_surface:
+                for rx_x, rx_y, rx_z in model.rx_buoy:
                     model.r[rx_x, rx_y, rx_z].unfix()
 
                 results = solver.solve(model, tee=False)
 
                 if results.solver.status == SolverStatus.ok:
-
                     obj = value(model.objective)
                     print(f"Solution value (ocean coverage percentage) = {obj}")
                     
                     fixed_receivers = {(rx_x, rx_y, rx_z): 1 
-                    for rx_x, rx_y, rx_z in model.ocean_surface 
-                        if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
+                                     for rx_x, rx_y, rx_z in model.rx_buoy 
+                                     if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
                     
                     # Fix receivers and free sources
-                    for rx_x, rx_y, rx_z in model.ocean_surface:
-
+                    for rx_x, rx_y, rx_z in model.rx_buoy:
                         if (rx_x, rx_y, rx_z) in fixed_receivers:
                             model.r[rx_x, rx_y, rx_z].fix(1)
                         else:
                             model.r[rx_x, rx_y, rx_z].fix(0)
                             
-                    for tx_x, tx_y, tx_z in model.ocean_surface:
+                    for tx_x, tx_y, tx_z in model.tx_buoy:
                         model.s[tx_x, tx_y, tx_z].unfix()
                     
                     results = solver.solve(model, tee=False)
                     
                     if results.solver.status == SolverStatus.ok:
-
                         obj = value(model.objective)
                         print(f"Solution value (ocean coverage percentage) = {obj}")
                         
                         fixed_sources = {(tx_x, tx_y, tx_z): 1 
-                        for tx_x, tx_y, tx_z in model.ocean_surface 
-                            if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
+                                       for tx_x, tx_y, tx_z in model.tx_buoy 
+                                       if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
                         
                         if old_obj < obj:
                             old_obj = obj
@@ -320,15 +318,13 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 print(f"  Found new incumbent at iteration {round} with objective value {obj}")
     
     # Set model to best solution found
-    for rx_x, rx_y, rx_z in model.ocean_surface:
-
+    for rx_x, rx_y, rx_z in model.rx_buoy:
         if (rx_x, rx_y, rx_z) in best_receivers:
             model.r[rx_x, rx_y, rx_z].fix(1)
         else:
             model.r[rx_x, rx_y, rx_z].fix(0)
             
-    for tx_x, tx_y, tx_z in model.ocean_surface:
-
+    for tx_x, tx_y, tx_z in model.tx_buoy:
         if (tx_x, tx_y, tx_z) in best_sources:
             model.s[tx_x, tx_y, tx_z].fix(1)
         else:
@@ -338,14 +334,14 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
     results = solver.solve(model, tee=False)
     
     # Unfix all variables for the main solve
-    for tx_x, tx_y, tx_z in model.ocean_surface:
+    for tx_x, tx_y, tx_z in model.tx_buoy:
         model.s[tx_x, tx_y, tx_z].unfix()
-    for rx_x, rx_y, rx_z in model.ocean_surface:
+    for rx_x, rx_y, rx_z in model.rx_buoy:
         model.r[rx_x, rx_y, rx_z].unfix()
     
     return best_obj, best_sources, best_receivers
 
-def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
+def solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='cplex'):
     
     # Create solver interface
     if solver_name == 'cplex':
@@ -357,21 +353,18 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
 
     # Apply heuristic if requested
     if instance.HEURISTIC > 0:
-
-        best_obj, best_sources, best_receivers = apply_heuristic(model, instance, ocean_surface, solver_name)
+        best_obj, best_sources, best_receivers = apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name)
         print(f"Heuristic found solution with objective value: {best_obj}")
         
         # Use heuristic solution to warm start the main solve
         # First fix the best solution found
-        for tx_x, tx_y, tx_z in model.ocean_surface:
-
+        for tx_x, tx_y, tx_z in model.tx_buoy:
             if (tx_x, tx_y, tx_z) in best_sources:
                 model.s[tx_x, tx_y, tx_z].fix(1)
             else:
                 model.s[tx_x, tx_y, tx_z].fix(0)
                 
-        for rx_x, rx_y, rx_z in model.ocean_surface:
-
+        for rx_x, rx_y, rx_z in model.rx_buoy:
             if (rx_x, rx_y, rx_z) in best_receivers:
                 model.r[rx_x, rx_y, rx_z].fix(1)
             else:
@@ -381,9 +374,9 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         results = solver.solve(model, tee=True)
         
         # Unfix all variables for the main solve
-        for tx_x, tx_y, tx_z in model.ocean_surface:
+        for tx_x, tx_y, tx_z in model.tx_buoy:
             model.s[tx_x, tx_y, tx_z].unfix()
-        for rx_x, rx_y, rx_z in model.ocean_surface:
+        for rx_x, rx_y, rx_z in model.rx_buoy:
             model.r[rx_x, rx_y, rx_z].unfix()
     
     # Write the model before main solve
@@ -433,12 +426,12 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         print(f"Root + cuts objective value: {value(model.objective)}")
     
     else:  # full solve
-
         start_time = time.time()
         results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
         
-        if (results.solver.status == SolverStatus.ok and results.solver.termination_condition == TerminationCondition.optimal):
+        if (results.solver.status == SolverStatus.ok and 
+            results.solver.termination_condition == TerminationCondition.optimal):
             print("Optimal solution found")
         elif results.solver.termination_condition == TerminationCondition.maxTimeLimit:
             print("Time limit reached")
