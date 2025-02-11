@@ -92,7 +92,7 @@ print(f"Called")
 # --- read ocean elevation data file
 # ---------------------------------------------------
 
-map, ocean, ocean_surface, min_depth, max_depth, depth_layer_hight, resolution = reading_in_ocean_data(instance)
+map, ocean, ocean_surface, tx_buoy, rx_buoy, min_depth, max_depth, depth_layer_hight, resolution = reading_in_ocean_data(instance)
 
 # ---------------------------------------------------
 # --- create outputs
@@ -116,7 +116,7 @@ create_plot_func_g(instance, outdir)
 
 print(f"Computing coverage")
 
-detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution)
+detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, tx_buoy, rx_buoy, depth_layer_hight, resolution)
 
 # ---------------------------------------------------
 # --- computing the rowsum in detection_prob
@@ -132,14 +132,14 @@ detection_prob_rowsum_r, detection_prob_rowsum_s = compute_rowsum_detection_prob
 
 print(f"Create optimization model")
 
-model = create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob)
+model = create_optimization_model(instance, ocean_surface, ocean, tx_buoy, rx_buoy, detection_prob_rowsum_s, detection_prob)
 
 print(f"Solve optimization model")
 
-solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
+solve_model(model, instance, ocean_surface, tx_buoy, rx_buoy, outdir, 'cplex')  # or 'cplex', 'gurobi', etc.
 
 # ---------------------------------------------------
 # --- output optimization model results
 # ---------------------------------------------------
 
-output_solution(model, instance, ocean_surface, ocean, detection_prob, map, min_depth, max_depth, outdir, start_time)
+output_solution(model, instance, ocean, tx_buoy, rx_buoy, detection_prob, map, min_depth, max_depth, outdir, start_time)
