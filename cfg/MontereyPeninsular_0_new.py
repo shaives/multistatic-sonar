@@ -11,8 +11,8 @@ GOAL = 0 # optimization goal: cover all pixels, minimize cost for deployed equip
 S = 12000 # EITHER: cost for each deployed source (if GOAL=0), OR: number of deployed sources (if GOAL=1)
 R = 800 # EITHER: cost for each deployed receiver (if GOAL=0), OR: number of deployed receivers (if GOAL=1)
 
-S_DEPTH = {'tx_d1' : 90, 'tx_d2' : 200, 'tx_d3' : 400 , 'tx_d4' : 1000} # depth of source (in feet)
-R_DEPTH = {'rx_d1_1' : 50, 'rx_d1_2' : 150, 'rx_d1_3' : 300, 'rx_d2_1' : 90, 'rx_d2_2' : 400, 'rx_d2_1' : 1500} # depth of receiver (in feet)
+RX_DEPTHS  = [90, 200, 400, 1000]
+TX_DEPTHS  = [50, 150, 300, 90, 400, 1500]
 
 rho_0 = 8000 # range of the day (in yards)
 rb = 750 # pulse length cw 0.5s (for direct-blast-effect) (in yards)
