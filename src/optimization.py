@@ -2,7 +2,7 @@ from pyomo.environ import *
 import time
 import random
 
-def create_optimization_model(instance, ocean_surface, tx_buoy, rx_buoy, ocean, detection_prob_rowsum_s, detection_prob):
+def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, detection_prob_rowsum_s, detection_prob):
     # Create concrete model
     model = ConcreteModel()
     
