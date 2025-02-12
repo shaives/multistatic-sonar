@@ -132,11 +132,11 @@ detection_prob_rowsum_r, detection_prob_rowsum_s = compute_rowsum_detection_prob
 
 print(f"Create optimization model")
 
-model = create_optimization_model(instance, ocean_surface, ocean, tx_buoy, rx_buoy, detection_prob_rowsum_s, detection_prob)
+model = create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, detection_prob_rowsum_s, detection_prob)
 
 print(f"Solve optimization model")
 
-solve_model(model, instance, ocean_surface, tx_buoy, rx_buoy, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
+solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='gurobi')  # or 'cplex', 'gurobi', etc.
 
 # ---------------------------------------------------
 # --- output optimization model results
