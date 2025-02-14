@@ -57,7 +57,7 @@ def get_elevation_single_point(lat: float, lon: float, retry_count: int = 3) -> 
     print(f"All APIs failed for lat={lat}, lon={lon}")
     return None
 
-def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 2025.37) -> Tuple[np.ndarray, Dict]:
+def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 1852) -> Tuple[np.ndarray, Dict]:
     """
     Get elevation data for area defined by corners.
     """
@@ -84,11 +84,30 @@ def get_elevation_grid(corners: Dict, resolution: int = 10, res_size: float = 20
     start_time = time.time()
     points_completed = 0
     
+    # Constants for converting meters to degrees
+    # At the equator, 1 degree of latitude = 111,320 meters
+    # Longitude degrees vary with latitude due to the Earth's curvature
+    METERS_PER_DEGREE_LAT = 111320.0
+    
+    def meters_per_degree_lon(lat):
+        """Calculate meters per degree of longitude at a given latitude"""
+        return METERS_PER_DEGREE_LAT * np.cos(np.radians(lat))
+    
+    # Calculate center latitude for longitude conversion
+    center_lat = (corners['nw']['lat'] + corners['sw']['lat']) / 2
+    meters_per_degree_longitude = meters_per_degree_lon(center_lat)
+    
+    # Calculate cell sizes in degrees
+    cell_size_lat = res_size / METERS_PER_DEGREE_LAT
+    cell_size_lon = res_size / meters_per_degree_longitude
+    
     # Get elevation data
     for i in range(resolution):
         for j in range(resolution):
-            lat = corners['nw']['lat'] - i * res_size / (2025.37 * 60) - (0.5 * res_size / (2025.37 * 60))  # Start from top
-            lon = corners['nw']['lon'] + j * res_size / (2025.37 * 60) + (0.5 * res_size / (2025.37 * 60))  # Start from left
+            # Calculate lat/lon for current cell
+            # Start from top-left (northwest) corner and add half cell size to get center
+            lat = corners['nw']['lat'] - (i * cell_size_lat) - (0.5 * cell_size_lat)
+            lon = corners['nw']['lon'] + (j * cell_size_lon) + (0.5 * cell_size_lon)
             
             elevation = get_elevation_single_point(lat, lon)
             grid[i, j] = elevation if elevation is not None else metadata['nodata_value']
