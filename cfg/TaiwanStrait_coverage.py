@@ -1,5 +1,5 @@
 DIR        = "data/"  # directory where to find input and store output files
-INPUT      = "Taiwan_20250214_120408.asc"            # file name of ocean floor data
+INPUT      = "TaiwanStrait_20250214_120408.asc"            # file name of ocean floor data
 RAM        = 131072                     # RAM allocation in MB
 X          = 10                         # number of pixels in x-direction
 Y          = 10                         # number of pixels in y-direction
