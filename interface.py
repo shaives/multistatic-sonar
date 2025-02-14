@@ -3,21 +3,47 @@ import folium
 import os
 
 from streamlit_folium import st_folium
-from folium.plugins import Draw
 from datetime import datetime
 from src.elevation_retriever import *
 
+def normalize_longitude(lon):
+    """
+    Normalize longitude to be within -180 to 180 degrees
+    """
+    lon = lon % 360
+    if lon > 180:
+        lon -= 360
+    return lon
 
 def create_box_coordinates(center_lat, center_lon, size_nm):
-    """Create box coordinates given center point and size in nautical miles"""
+    """
+    Create box coordinates given center point and size in nautical miles.
+    Handles longitude wrapping around the globe.
+    
+    Parameters:
+        center_lat (float): Center latitude in degrees (-90 to 90)
+        center_lon (float): Center longitude in degrees (will be normalized to -180 to 180)
+        size_nm (float): Size of the box in nautical miles
+        
+    Returns:
+        list: List of [lat, lon] coordinates for the box corners in order: NW, NE, SE, SW
+    """
+    # Normalize center longitude first
+    center_lon = normalize_longitude(center_lon)
+    
+    # Convert nautical miles to degrees
     deg_per_nm = 1/60
     half_size_deg = (size_nm/2) * deg_per_nm
-    return [
-        [center_lat + half_size_deg, center_lon - half_size_deg],  # NW
-        [center_lat + half_size_deg, center_lon + half_size_deg],  # NE
-        [center_lat - half_size_deg, center_lon + half_size_deg],  # SE
-        [center_lat - half_size_deg, center_lon - half_size_deg]   # SW
+    
+    # Calculate corner coordinates
+    corners = [
+        [center_lat + half_size_deg, normalize_longitude(center_lon - half_size_deg)],  # NW
+        [center_lat + half_size_deg, normalize_longitude(center_lon + half_size_deg)],  # NE
+        [center_lat - half_size_deg, normalize_longitude(center_lon + half_size_deg)],  # SE
+        [center_lat - half_size_deg, normalize_longitude(center_lon - half_size_deg)]   # SW
     ]
+    
+    return corners
 
 # Set page config
 st.set_page_config(layout="wide", page_title="BISON Rancher", page_icon="🦬")
@@ -52,6 +78,16 @@ st.markdown("""
             color: white !important;
         }
         
+        /* Disabled button styling */
+        .disabled-button {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+        }
+        .gray-button > button {
+            background-color: #404040 !important;
+            color: black !important;
+        }
+        
         /* Prevent scrollbar */
         .main {
             overflow: hidden;
@@ -78,6 +114,8 @@ if 'center' not in st.session_state:
     st.session_state.center = [62.0, -7.0]
 if 'coordinate_area' not in st.session_state:
     st.session_state.coordinate_area = None
+if 'processing' not in st.session_state:
+    st.session_state.processing = False
 
 # Sidebar controls
 with st.sidebar:
@@ -131,39 +169,35 @@ with st.sidebar:
         help="Heuristic search intensity. More rounds may find better solutions but take longer."
     )
     
-    # Time limit selection
-    time_limit_unit = st.selectbox(
-        "Time Limit Unit",
-        ["Hours", "Minutes", "Seconds"]
-    )
+    # Time limit in hours only
+    time_limit = st.number_input(
+        "Time Limit (hours)",
+        min_value=1,
+        max_value=168,  # 1 week
+        value=10,
+        help="Maximum time allowed for optimization"
+    ) * 3600  # Convert to seconds for the solver
     
-    # Adjust time limit input based on unit
-    if time_limit_unit == "Hours":
-        time_limit = st.number_input(
-            "Time Limit (hours)",
-            min_value=1,
-            max_value=168,  # 1 week
-            value=10,
-            help="Maximum time allowed for optimization"
-        ) * 3600
-    elif time_limit_unit == "Minutes":
-        time_limit = st.number_input(
-            "Time Limit (minutes)",
-            min_value=1,
-            max_value=10080,  # 1 week
-            value=600,
-            help="Maximum time allowed for optimization"
-        ) * 60
-    else:  # Seconds
-        time_limit = st.number_input(
-            "Time Limit (seconds)",
-            min_value=1,
-            max_value=604800,  # 1 week
-            value=36000,
-            help="Maximum time allowed for optimization"
-        )
-
-    submit = st.button("Submit Job to HPC")
+    # Add custom button styling
+    st.markdown("""
+        <style>
+        /* Full-width button container */
+        .stButton > button {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Vertical buttons
+    get_depth = st.button("Retrieve Depth Data")
+    
+    # Reset button logic
+    if st.button("Reset"):
+        st.session_state.last_clicked = None
+        st.session_state.coordinate_area = None
+        st.session_state.processing = False
+        st.rerun()
 
 # Initialize map
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom)
@@ -208,7 +242,7 @@ map_data = st_folium(
     m,
     width="100%",
     height=850,
-    returned_objects=["last_clicked", "last_active_drawing", "zoom", "center"]
+    returned_objects=["last_clicked", "zoom", "center"]
 )
 
 # Update stored zoom and center
@@ -221,17 +255,26 @@ if map_data.get("center"):
     ]
 
 # Handle map clicks for predefined sizes
-if (map_data["last_clicked"] and 
-    area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and 
-    map_data["last_clicked"] != st.session_state.last_clicked):
+if (map_data.get("last_clicked") and 
+    area_size in ["10x10 NM", "30x30 NM", "60x60 NM"]):
     
-    st.session_state.last_clicked = map_data["last_clicked"]
-    st.rerun()
-
-# Handle custom area drawing
-if area_size == "Custom" and map_data["last_active_drawing"]:
-    st.session_state.custom_area = map_data["last_active_drawing"]
-    st.rerun()
+    # Check if this is actually a new click, not just a map movement
+    new_click = True
+    if st.session_state.last_clicked:
+        # Compare coordinates with small tolerance for floating point differences
+        old_lat = st.session_state.last_clicked['lat']
+        old_lng = st.session_state.last_clicked['lng']
+        new_lat = map_data["last_clicked"]['lat']
+        new_lng = map_data["last_clicked"]['lng']
+        
+        # Only consider it a new click if position changed significantly
+        if abs(old_lat - new_lat) < 0.0001 and abs(old_lng - new_lng) < 0.0001:
+            new_click = False
+    
+    if new_click:
+        st.session_state.last_clicked = map_data["last_clicked"]
+        st.session_state.processing = False
+        st.rerun()
 
 # Clear areas when changing modes
 if 'last_area_size' not in st.session_state:
@@ -239,11 +282,12 @@ if 'last_area_size' not in st.session_state:
 elif st.session_state.last_area_size != area_size:
     st.session_state.last_clicked = None
     st.session_state.coordinate_area = None
+    st.session_state.processing = False
     st.session_state.last_area_size = area_size
     st.rerun()
 
-# Handle form submission
-if submit:
+# Handle depth data retrieval
+if get_depth:
     # Check if an area was selected/drawn
     if area_size in ["10x10 NM", "30x30 NM", "60x60 NM"] and st.session_state.last_clicked is not None:
         # Create job directory with timestamp
@@ -251,17 +295,15 @@ if submit:
         job_dir = f"bison_job_{timestamp}"
         
         # Get area dimensions
-            # Add area-specific data
-        if area_size == "10x10 NM" or area_size == "30x30 NM":
-            x_dim = y_dim = resolution =  10  # Setting both dimensions to the area size
+        if area_size == "10x10 NM":
+            x_dim = y_dim = resolution = 10
             size = 10
-        elif area_size == "30x30 NM": 
-            x_dim = y_dim = resolution =  10  # Setting both dimensions to the area size
+        elif area_size == "30x30 NM":
+            x_dim = y_dim = resolution = 10
             size = 30
         elif area_size == "60x60 NM":
-            x_dim = y_dim = resolution = 16  # Setting both dimensions to the area size
+            x_dim = y_dim = resolution = 16
             size = 60
-
         
         # Get corners and retrieve elevation data based on area type
         if st.session_state.last_clicked:
@@ -280,8 +322,8 @@ if submit:
                             "nw": {"lat": box_coords[0][0], "lon": box_coords[0][1]},
                             "sw": {"lat": box_coords[3][0], "lon": box_coords[3][1]}
                         }, 
-                        resolution = resolution, 
-                        res_size = size * 1852 / resolution
+                        resolution=resolution, 
+                        res_size=size * 1852 / resolution
                     )
                     
                     # Save elevation data
@@ -325,7 +367,7 @@ if submit:
                         'TX_DEPTHS  = [50, 150, 300, 90, 400, 1500]',
                         '',
                         '# Target strength configuration',
-                        'TS         = [(0.0,0.1),(30.0,0.4),(75.0,0.3),(90.0,1.0)]          # target strength (in pixels), added to range of the day'
+                        'TS         = [(0.0,2000),(10.0,0),(20.0,2000),(30.0,3000),(40.0,4000),(50.0,2000),(60.0,4000),(70.0,6000),(80.0,6000),(90.0,10000),(100.0,8000),(110.0,6000),(120.0,0),(130.0,2000),(140.0,4000),(150.0,-3000),(160.0,-2000),(170.0,-2500),(180.0,2000)]          # target strength function'
                     ])
                     
                     # Add optimization parameters
@@ -356,5 +398,3 @@ if submit:
                     
             except Exception as e:
                 st.error(f"Error preparing job files: {str(e)}")
-
-        print(f"Starting BISON job")
