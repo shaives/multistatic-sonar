@@ -1,10 +1,10 @@
 #!/bin/sh
-#SBATCH --job-name bison_cplex
+#SBATCH --job-name bison_gurobi
 #SBATCH --array=0-9                             # How many different jobs do you want to run? You probably want 1.
 #SBATCH --nodes=1                               # How many nodes do you want to use? You probably want 1.
 #SBATCH --ntasks=1                              # How many tasks (i.e. processors w/ distributed memory) do you want? You probably want 1 here unless using MPI.
-#SBATCH --cpus-per-task=32                      # How many cores (i.e. threads w/ shared memory) per processor do you want?
-#SBATCH --mem=256GB                             # How much memory do you want total? (You can use suffixes: M=MB, G=GB, T=TB.)
+#SBATCH --cpus-per-task=64                      # How many cores (i.e. threads w/ shared memory) per processor do you want?
+#SBATCH --mem=128GB                             # How much memory do you want total? (You can use suffixes: M=MB, G=GB, T=TB.)
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
 #SBATCH --output=logs/%j_%a_out.txt             # path for logs
 #SBATCH --error=logs/%j_%a_error.txt            # path for errors
@@ -31,6 +31,8 @@ Start time: $(date)
 "
 
 . /etc/profile
-source /smallwork/$USER/myenv1/bin/activate
+# Load Conda environment with Python 3.10
+# Edit the path to your conda installation if necessary
+source /smallwork/conrad.urban.gy/myenv1/bin/activate
 
 python bison.py ${ARGS[$SLURM_ARRAY_TASK_ID]}
