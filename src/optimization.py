@@ -3,6 +3,9 @@ import time
 import random
 
 def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, detection_prob_rowsum_s, detection_prob):
+    
+    start_time_create = time.time()
+
     # Create concrete model
     model = ConcreteModel()
     
@@ -27,7 +30,7 @@ def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, 
     
     # Coverage variable for GOAL=1, indexed by ocean coordinates
     if instance.GOAL == 1:
-        model.c = Var(model.ocean, domain=Binary)
+        model.coverage = Var(model.ocean, domain=Binary)
     
     # Y variables for linearization, indexed by detection_keys
     def y_bounds(model, *keys):
@@ -44,36 +47,11 @@ def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, 
     else:
         def obj_coverage_rule(model):
             percentage = 100.0/len(ocean)
-            return sum(percentage * model.c[loc] for loc in model.ocean)
+            return sum(percentage * model.coverage[loc] for loc in model.ocean)
         model.objective = Objective(rule=obj_coverage_rule, sense=maximize)
     
-    # CONSTRAINTS
-    # One buoy per surface location constraints
-    def one_source_per_surface_rule(model, x, y):
-        surface_buoys = [loc for loc in model.tx_buoy if loc[0] == x and loc[1] == y]
-        return sum(model.s[loc] for loc in surface_buoys) <= 1
-    model.one_source_per_surface = Constraint(
-        ((x, y) for x, y, _ in model.ocean_surface),
-        rule=one_source_per_surface_rule
-    )
-    
-    def one_receiver_per_surface_rule(model, x, y):
-        surface_buoys = [loc for loc in model.rx_buoy if loc[0] == x and loc[1] == y]
-        return sum(model.r[loc] for loc in surface_buoys) <= 1
-    model.one_receiver_per_surface = Constraint(
-        ((x, y) for x, y, _ in model.ocean_surface),
-        rule=one_receiver_per_surface_rule
-    )
+    if instance.GOAL == 0:
 
-    if instance.GOAL == 1:
-        def fix_sources_rule(model):
-            return sum(model.s[loc] for loc in model.tx_buoy) == instance.S
-        model.fix_sources = Constraint(rule=fix_sources_rule)
-        
-        def fix_receivers_rule(model):
-            return sum(model.r[loc] for loc in model.rx_buoy) == instance.R
-        model.fix_receivers = Constraint(rule=fix_receivers_rule)
-    else:
         def min_sources_rule(model):
             return sum(model.s[loc] for loc in model.tx_buoy) >= 1
         model.min_sources = Constraint(rule=min_sources_rule)
@@ -81,17 +59,27 @@ def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, 
         def min_receivers_rule(model):
             return sum(model.r[loc] for loc in model.rx_buoy) >= 1
         model.min_receivers = Constraint(rule=min_receivers_rule)
-    
+
+    else:
+
+        def fix_sources_rule(model):
+            return sum(model.s[loc] for loc in model.tx_buoy) == instance.S
+        model.fix_sources = Constraint(rule=fix_sources_rule)
+        
+        def fix_receivers_rule(model):
+            return sum(model.r[loc] for loc in model.rx_buoy) == instance.R
+        model.fix_receivers = Constraint(rule=fix_receivers_rule)
+
     # Coverage constraints
     def coverage_rule(model, tar_x, tar_y, tar_z, theta):
         relevant_keys = [k for k in model.detection_keys 
                         if k[0] == tar_x and k[1] == tar_y and k[2] == tar_z and k[3] == theta]
-        
+
         expr = sum(detection_prob_rowsum_s[k] * model.s[(k[4], k[5], k[6])] -
                   model.y[k] for k in relevant_keys)
         
         if instance.GOAL == 1:
-            expr -= model.c[(tar_x, tar_y, tar_z)]
+            expr -= model.coverage[(tar_x, tar_y, tar_z)]
             return expr >= 0
         else:
             return expr >= 1
@@ -117,11 +105,18 @@ def create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_buoy, 
         return expr >= 0
     
     model.linearization = Constraint(model.detection_keys, rule=linearization_rule)
-    
+
+    end_time_create = time.time()
+
+    print(f"it took {(end_time_create - start_time_create):.2f} sec to create the model")
+
+
     return model
 
 def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
+
     print(f"Running {instance.HEURISTIC} rounds of heuristic")
+
     # Create solver interface
     if solver_name == 'cplex':
         solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
@@ -129,14 +124,18 @@ def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
         solver = SolverFactory(solver_name)
     
     if instance.GOAL == 0:  # minimize cost for deployed equipment
+
         print(f"Running heuristic for cost minimization = 0")
-        best_obj = float('inf')
+
         best_sources = {}
         best_receivers = {}
         
-        # PREQUEL
+        fixed_sources = {}
         fixed_receivers = dict(rx_buoy)  # Start with all positions
+
+        best_obj = float('inf')
         old_obj = float('inf')
+        obj = float('inf')
         
         while True:
             # Fix receivers and free sources
@@ -157,14 +156,19 @@ def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
                 obj = value(model.objective)
                 fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.tx_buoy 
                                if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
-                
+
                 # Fix sources and free receivers
                 for tx_x, tx_y, tx_z in model.tx_buoy:
                     if (tx_x, tx_y, tx_z) in fixed_sources:
                         model.s[tx_x, tx_y, tx_z].fix(1)
                     else:
                         model.s[tx_x, tx_y, tx_z].fix(0)
-                        
+                
+                # Add debug prints here
+                print(f"Fixed sources: {fixed_sources}")
+                print(f"Number of active variables:", 
+                    sum(1 for v in model.component_data_objects(Var) if value(v) > 0.999))
+        
                 for rx_x, rx_y, rx_z in model.rx_buoy:
                     model.r[rx_x, rx_y, rx_z].unfix()
                 
@@ -240,25 +244,34 @@ def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
                         print(f"  Found new incumbent at iteration {round} with objective value {obj}")
     
     else:  # GOAL = 1 (maximize coverage)
+
         print(f"Running heuristic for coverage maximization = 1")
-        best_obj = -1
+        
         best_sources = []
         best_receivers = []
+
         list_of_fixed_sources = []
         
+        best_obj = -1
+
         for round in range(1, instance.HEURISTIC + 1, 1):
+
             print(f"----------{round}-----------")
             
             while True:
+
                 fixed_sources = {}
                 tx_buoy_list = list(tx_buoy.keys())
 
                 while len(fixed_sources) < instance.S:
+
                     tx_x, tx_y, tx_z = random.choice(tx_buoy_list)
+
                     if (tx_x, tx_y, tx_z) not in fixed_sources:
                         fixed_sources[tx_x, tx_y, tx_z] = 1
 
                 if fixed_sources not in list_of_fixed_sources:
+
                     list_of_fixed_sources.append(fixed_sources)
                     break
             
@@ -268,6 +281,7 @@ def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
             while True:
                 # Fix sources and free receivers
                 for tx_x, tx_y, tx_z in model.tx_buoy:
+
                     if (tx_x, tx_y, tx_z) in fixed_sources:
                         model.s[tx_x, tx_y, tx_z].fix(1)
                     else:
@@ -276,7 +290,7 @@ def apply_heuristic(model, instance, tx_buoy, rx_buoy, solver_name='cplex'):
                 for rx_x, rx_y, rx_z in model.rx_buoy:
                     model.r[rx_x, rx_y, rx_z].unfix()
 
-                results = solver.solve(model, tee=False)
+                results = solver.solve(model, tee=True)
 
                 if results.solver.status == SolverStatus.ok:
                     obj = value(model.objective)
