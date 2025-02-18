@@ -139,15 +139,15 @@ def output_solution(model, instance, ocean, tx_buoy, rx_buoy, detection_prob, ma
         if value(model.r[rx_x, rx_y, rx_z]) > 0.999:
             print(f"  ({rx_x}, {rx_y}, {rx_z})")
 
-    if instance.GOAL == 1 and hasattr(model, 'c'):
+    if instance.GOAL == 1 and hasattr(model, 'coverage'):
         print("Covered ocean pixels:")
         for tar_x, tar_y, tar_z in ocean:
-            if value(model.c[tar_x, tar_y, tar_z]) > 0.999:
+            if value(model.coverage[tar_x, tar_y, tar_z]) > 0.999:
                 print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
         print("Not covered ocean pixels:")
         for tar_x, tar_y, tar_z in ocean:
-            if value(model.c[tar_x, tar_y, tar_z]) < 0.001:
+            if value(model.coverage[tar_x, tar_y, tar_z]) < 0.001:
                 print(f"  ({tar_x}, {tar_y}, {tar_z})")
 
     # ---------------------------------------------------
@@ -215,9 +215,9 @@ def output_solution(model, instance, ocean, tx_buoy, rx_buoy, detection_prob, ma
                     file.write(f"    \\node at (axis cs:{x},{y}) [above,font=\\scriptsize] {{{int(map[x,y])}}};\n")
 
         # Coverage visualization
-        if instance.GOAL == 1 and hasattr(model, 'c'):
+        if instance.GOAL == 1 and hasattr(model, 'coverage'):
             for tar_x, tar_y, tar_z in ocean:
-                if value(model.c[tar_x, tar_y, tar_z]) > 0.999:
+                if value(model.coverage[tar_x, tar_y, tar_z]) > 0.999:
                     val = str(cov_val[tar_x, tar_y, tar_z])
                 else:
                     val = "X"
