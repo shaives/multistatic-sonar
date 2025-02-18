@@ -246,8 +246,8 @@ def reading_in_ocean_data(instance):
 def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, resolution):
 
     # convert yards to meters
-    rho_0 = instance.rho_0 * 0.9144
-    rb = instance.rb * 0.9144
+    rho_0 = instance.RHO_0 * 0.9144
+    rb = instance.RB * 0.9144
 
     detection_prob = {}
 
