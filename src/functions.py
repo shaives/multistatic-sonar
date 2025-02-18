@@ -189,6 +189,8 @@ def reading_in_ocean_data(instance):
     if (nrows != len(elevation_data)+1):
 
         print(f"Not enough data in file")
+        print(f"nrows: {nrows}")
+        print(f"data: {len(elevation_data)}")
         quit()
 
     map = {}
@@ -211,7 +213,7 @@ def reading_in_ocean_data(instance):
                 depth_layer_hight = max(15, int(abs(max_depth / 10)))
 
         # for each line in the data
-        for y, line_str in enumerate(elevation_data[(nrows - 100 - instance.Y):nrows - 100][::-1]):
+        for y, line_str in enumerate(elevation_data[(nrows - instance.Y):nrows][::-1]):
             
             # for each element in the line
             for x, element in enumerate(re.split("\s+", line_str)[:instance.X]):
