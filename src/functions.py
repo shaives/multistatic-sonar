@@ -189,8 +189,6 @@ def reading_in_ocean_data(instance):
     if (nrows != len(elevation_data)):
 
         print(f"Not enough data in file")
-        print(f"nrows: {nrows}")
-        print(f"data: {len(elevation_data)}")
         quit()
 
     map = {}
