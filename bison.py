@@ -116,7 +116,7 @@ create_plot_func_g(instance, outdir)
 
 print(f"Computing coverage")
 
-detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, tx_buoy, rx_buoy, depth_layer_hight, resolution)
+detection_prob = compute_coverage_triples(instance, ocean, tx_buoy, rx_buoy, depth_layer_hight, resolution)
 
 # ---------------------------------------------------
 # --- computing the rowsum in detection_prob
@@ -124,7 +124,7 @@ detection_prob = compute_coverage_triples(instance, ocean, ocean_surface, tx_buo
 
 print(f"Computing detection prob")
 
-detection_prob_rowsum_r, detection_prob_rowsum_s = compute_rowsum_detection_prob(instance, ocean, tx_buoy, rx_buoy, detection_prob)
+detection_prob_rowsum_s = compute_rowsum_detection_prob(instance, ocean, tx_buoy, rx_buoy, detection_prob)
 
 # ---------------------------------------------------
 # --- set up & compute optimization model
@@ -136,7 +136,7 @@ model = create_optimization_model(instance, ocean, ocean_surface, tx_buoy, rx_bu
 
 print(f"Solve optimization model")
 
-solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='gurobi')  # or 'cplex', 'gurobi', etc.
+solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='cplex')  # or 'cplex', 'gurobi', etc.
 
 # ---------------------------------------------------
 # --- output optimization model results
