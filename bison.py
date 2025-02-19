@@ -136,7 +136,7 @@ model = create_optimization_model(instance, ocean_surface, ocean, detection_prob
 
 print(f"Solve optimization model")
 
-solve_model(model, instance, ocean_surface, outdir, 'gurobi')  # or 'cplex', 'gurobi', etc.
+solve_model(model, instance, ocean_surface, outdir, 'cplex')  # or 'cplex', 'gurobi', etc.
 
 # ---------------------------------------------------
 # --- output optimization model results

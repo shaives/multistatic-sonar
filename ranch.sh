@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name bison_gurobi
+#SBATCH --job-name bison_cplex
 #SBATCH --array=0-9                             # How many different jobs do you want to run? You probably want 1.
 #SBATCH --nodes=1                               # How many nodes do you want to use? You probably want 1.
 #SBATCH --ntasks=1                              # How many tasks (i.e. processors w/ distributed memory) do you want? You probably want 1 here unless using MPI.
