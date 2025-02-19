@@ -421,7 +421,12 @@ def solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='cplex'):
         model.write(outdir + "/bison_relaxed.lp", io_options={'symbolic_solver_labels': True})
 
         start_time = time.time()
-        results = solver.solve(model, tee=True, load_solutions=True)
+        if instance.HEURISTIC == 0:
+            print(f"Solving root relaxation")
+            results = solver.solve(model, tee=True)
+        else:
+            print(f"Solving root relaxation with warm start")
+            results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
 
         print(f"Root relaxation objective value: {value(model.objective)}")
@@ -434,14 +439,24 @@ def solve_model(model, instance, tx_buoy, rx_buoy, outdir, solver_name='cplex'):
         model.write(outdir + "/bison_cuts.lp", io_options={'symbolic_solver_labels': True})
 
         start_time = time.time()
-        results = solver.solve(model, tee=True, load_solutions=True)
+        if instance.HEURISTIC == 0:
+            print(f"Solving root + cuts")
+            results = solver.solve(model, tee=True)
+        else:
+            print(f"Solving root + cuts with warm start")
+            results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
 
         print(f"Root + cuts objective value: {value(model.objective)}")
     
     else:  # full solve
         start_time = time.time()
-        results = solver.solve(model, tee=True, load_solutions=True)
+        if instance.HEURISTIC == 0:
+            print(f"Solving full model")
+            results = solver.solve(model, tee=True)
+        else:
+            print(f"Solving full model with warm start")
+            results = solver.solve(model, tee=True, load_solutions=True)
         solve_time = time.time() - start_time
         
         if (results.solver.status == SolverStatus.ok and 
