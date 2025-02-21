@@ -8,7 +8,7 @@
 #SBATCH --gres=gpu:0                            # Make sure that you do not request a GPU if you do not use an appropriate partition.
 #SBATCH --output=logs/%j_%a_out.txt             # path for logs
 #SBATCH --error=logs/%j_%a_error.txt            # path for errors
-#SBATCH --time 1-00:00:00                       # max time running on HPC days-hours:minutes:secounds
+#SBATCH --time 1-12:00:00                       # max time running on HPC days-hours:minutes:secounds
 #SBATCH --mail-user conrad.urban.gy@nps.edu
 #SBATCH --mail-type ALL                         # Send email on job start, end, and fail
 
