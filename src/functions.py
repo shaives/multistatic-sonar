@@ -2,6 +2,9 @@ import numpy as np
 import re
 import time
 
+import arlpy.uwapm as pm
+import arlpy.plot as plt
+
 from math import *
 
 # Euclidean distance between two points
@@ -287,6 +290,7 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                         if (rx_x, rx_y, rx_z) != (tar_x, tar_y, tar_z): # exclude of reciever and target in same position
                         
                             # no obstacles between source-target and target-receiver, and source-reiver
+                            # replace this with arlpy pm eigenaray calculation
                             if check_line(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, ocean) == None and check_line(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, ocean) == None:
 
                                 sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
@@ -297,13 +301,15 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                                     my_theta = theta / 180.0 * pi
                                     my_sin_theta = sin(my_theta)
                                     my_cos_theta = cos(my_theta)
-                                      
+
+                                    # still checking if outside of direct last  
                                     if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for outside direct-blast-effect
 
                                         alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
 
                                         #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
-
+                                        
+                                        # calculate db at target here and only save the value if it is strong enough to be recieved by an reciever
                                         if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= (rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
 
                                             detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
