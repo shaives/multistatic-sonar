@@ -167,7 +167,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
             print("Solving for sources")
             results = solver_heu.solve(model, tee=True)
             print(f"Solver status: {results.solver.status}")
-            if results.solver_heu.status == SolverStatus.ok:
+            if results.solver.status == SolverStatus.ok:
 
                 obj = value(model.objective)
                 fixed_sources = {(tx_x, tx_y, tx_z): 1 for tx_x, tx_y, tx_z in model.ocean_surface if value(model.s[tx_x, tx_y, tx_z]) > 0.999}
@@ -186,7 +186,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                 print("Solving for receivers")
                 results = solver_heu.solve(model, tee=True)
                 
-                if results.solver_heu.status == SolverStatus.ok:
+                if results.solver.status == SolverStatus.ok:
                     obj = value(model.objective)
                     fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
                     
@@ -247,7 +247,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                     
                 results = solver_heu.solve(model, tee=True)
 
-                if results.solver_heu.termination_condition != TerminationCondition.infeasible:
+                if results.solver.termination_condition != TerminationCondition.infeasible:
                     obj = value(model.objective)
                     fixed_receivers = {(rx_x, rx_y, rx_z): 1 for rx_x, rx_y, rx_z in model.ocean_surface if value(model.r[rx_x, rx_y, rx_z]) > 0.999}
 
@@ -304,7 +304,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
 
                 results = solver_heu.solve(model, tee=False)
 
-                if results.solver_heu.status == SolverStatus.ok:
+                if results.solver.status == SolverStatus.ok:
 
                     obj = value(model.objective)
                     print(f"Solution value (ocean coverage percentage) = {obj}")
@@ -326,7 +326,7 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
                     
                     results = solver_heu.solve(model, tee=False)
                     
-                    if results.solver_heu.status == SolverStatus.ok:
+                    if results.solver.status == SolverStatus.ok:
 
                         obj = value(model.objective)
                         print(f"Solution value (ocean coverage percentage) = {obj}")
