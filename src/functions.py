@@ -302,7 +302,7 @@ def compute_coverage_triples(instance, ocean, ocean_surface, depth_layer_hight, 
                                     my_sin_theta = sin(my_theta)
                                     my_cos_theta = cos(my_theta)
 
-                                    # still checking if outside of direct last  
+                                    # still checking if outside of direct blast  
                                     if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for outside direct-blast-effect
 
                                         alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
