@@ -380,7 +380,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
         solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
         solver.options['timelimit'] = instance.TIMELIMIT
         solver.options['workmem'] = instance.RAM
-        solver.options['mip_start'] = 1
+        solver.options['mip.start'] = 1
         solver.options['mipgap'] = 0.0
         solver.options['mip.pool.capacity'] = 5
         solver.options['advance'] = 0
