@@ -1,6 +1,103 @@
 from pyomo.environ import *
 import time
 import random
+import os
+import sys
+import platform
+
+def get_cplex_path():
+    """
+    Find the CPLEX executable by searching in common installation locations.
+    If not found, fall back to a path relative to the project directory.
+    
+    Returns:
+        str: Path to the CPLEX executable
+    """
+    # Check if CPLEX_PATH environment variable is set
+    if "CPLEX_PATH" in os.environ:
+        cplex_path = os.environ["CPLEX_PATH"]
+        if os.path.exists(cplex_path) and os.access(cplex_path, os.X_OK):
+            print(f"Using CPLEX from environment variable: {cplex_path}")
+            return cplex_path
+    
+    # Determine the operating system
+    system = platform.system()
+    
+    # List of common installation paths based on OS
+    common_paths = []
+    
+    if system == "Linux":
+        # IBM ILOG CPLEX default installation paths for Linux
+        common_paths = [
+            "~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex",
+            "/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex",
+            "/opt/ibm/ILOG/CPLEX_Studio221/cplex/bin/x86-64_linux/cplex",
+            "/opt/ibm/ILOG/CPLEX_Studio201/cplex/bin/x86-64_linux/cplex",
+            "/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/cplex",
+            "/opt/ibm/ILOG/CPLEX_Studio128/cplex/bin/x86-64_linux/cplex"
+        ]
+    elif system == "Darwin":  # macOS
+        common_paths = [
+            "~/Applications/CPLEX_Studio1210/cplex/bin/x86-64_darwin/cplex",
+            "/Applications/CPLEX_Studio1210/cplex/bin/x86-64_darwin/cplex"
+        ]
+    elif system == "Windows":
+        common_paths = [
+            "C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio1210\\cplex\\bin\\x64_win64\\cplex.exe",
+            "C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio221\\cplex\\bin\\x64_win64\\cplex.exe"
+        ]
+    
+    # Check common paths
+    for path in common_paths:
+        expanded_path = os.path.expanduser(path)
+        if os.path.exists(expanded_path) and os.access(expanded_path, os.X_OK):
+            print(f"Found CPLEX at: {expanded_path}")
+            return expanded_path
+    
+    # If not found in common paths, try to find relative to project directory
+    # Determine the project root directory (assuming this file is in src/ or directly in project root)
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Check for cplex in a 'solvers' or 'bin' subdirectory in the project
+    potential_project_paths = [
+        os.path.join(project_dir, "solvers", "cplex"),
+        os.path.join(project_dir, "bin", "cplex"),
+        os.path.join(project_dir, "cplex")
+    ]
+    
+    for path in potential_project_paths:
+        if os.path.exists(path) and os.access(path, os.X_OK):
+            print(f"Using project-bundled CPLEX at: {path}")
+            return path
+    
+    # If we get here, we couldn't find CPLEX
+    print("WARNING: CPLEX executable not found in common locations or relative to project.")
+    print("Please specify the path to CPLEX using the CPLEX_PATH environment variable.")
+    
+    # Return a default path that will be used, but may not work
+    default_path = "cplex"  # Try using from PATH as a last resort
+    print(f"Defaulting to '{default_path}' (requires CPLEX in system PATH)")
+    return default_path
+
+def create_solver(solver_name='cplex'):
+    """
+    Create a solver instance with appropriate configuration.
+    
+    Args:
+        solver_name (str): Name of the solver to use ('cplex' or 'gurobi')
+        
+    Returns:
+        SolverFactory: Configured solver instance
+    """
+    if solver_name.lower() == 'cplex':
+        cplex_path = get_cplex_path()
+        solver = SolverFactory('cplex_direct', executable=cplex_path)
+    elif solver_name.lower() == 'gurobi':
+        solver = SolverFactory('gurobi')
+    else:
+        raise ValueError(f"Unsupported solver: {solver_name}")
+    
+    return solver
 
 def create_optimization_model(instance, ocean_surface, ocean, detection_prob_rowsum_s, detection_prob):
     # Create concrete model
@@ -125,14 +222,14 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
 
     print(f"Running {instance.HEURISTIC} rounds of heuristic")
 
+    solver_heu = create_solver(solver_name)
+
     # Create solver interface
     if solver_name == 'cplex':
-        solver_heu = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
         solver_heu.options['timelimit'] = instance.TIMELIMIT_HEURISTIC
         solver_heu.options['workmem'] = instance.RAM
         solver_heu.options['mipgap'] = 0.0
     elif solver_name == 'gurobi':    
-        solver_heu = SolverFactory(solver_name)
         solver_heu.options['TimeLimit'] = instance.TIMELIMIT_HEURISTIC
         solver_heu.options['NodefileStart'] = instance.RAM / 1024
         solver_heu.options['MIPGap'] = 0.0
@@ -375,23 +472,22 @@ def apply_heuristic(model, instance, ocean_surface, solver_name='cplex'):
 
 def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
     
-    # Create solver interface
-    if solver_name == 'cplex':
-        solver = SolverFactory('cplex_direct', executable='~/opt/ibm/ILOG/CPLEX_Studio1210/cplex/bin/x86-64_linux/cplex')
+    # Create solver instance with flexible path resolution
+    solver = create_solver(solver_name)
+    
+    # Set solver options
+    if solver_name.lower() == 'cplex':
         solver.options['timelimit'] = instance.TIMELIMIT
         solver.options['workmem'] = instance.RAM
-        solver.options['mip.start'] = 1
         solver.options['mipgap'] = 0.0
-        solver.options['mip.pool.capacity'] = 5
-        solver.options['advance'] = 0
-    elif solver_name == 'gurobi':    
-        solver = SolverFactory(solver_name)
+    elif solver_name.lower() == 'gurobi':
         solver.options['TimeLimit'] = instance.TIMELIMIT
         solver.options['NodefileStart'] = instance.RAM / 1024
         solver.options['MIPGap'] = 0.0
-        solver.options['PoolSolutions'] = 5
-        solver.options['PoolSearchMode'] = 2
-        solver.options['StartNumber'] = 1
+ 
+    
+    # Rest of your function remains the same
+    # ...
 
     print(f"CPLEX timelimit set to: {solver.options['timelimit']}")
 
@@ -448,7 +544,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
 
         start_time = time.time()
         if instance.HEURISTIC > 0:
-            results = solver.solve(model, tee=True, load_solutions=True)
+            results = solver.solve(model, warmstart=True, tee=True, load_solutions=True)
         else:   
             results = solver.solve(model, tee=True)
         solve_time = time.time() - start_time
@@ -466,7 +562,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
 
         start_time = time.time()
         if instance.HEURISTIC > 0:
-            results = solver.solve(model, tee=True, load_solutions=True)
+            results = solver.solve(model, warmstart=True, tee=True, load_solutions=True)
         else:
             results = solver.solve(model, tee=True)
         solve_time = time.time() - start_time
@@ -479,7 +575,7 @@ def solve_model(model, instance, ocean_surface, outdir, solver_name='cplex'):
 
         start_time = time.time()
         if instance.HEURISTIC > 0:
-            results = solver.solve(model, tee=True, load_solutions=True)
+            results = solver.solve(model, warmstart=True, tee=True, load_solutions=True)
         else:
             results = solver.solve(model, tee=True)
         solve_time = time.time() - start_time
