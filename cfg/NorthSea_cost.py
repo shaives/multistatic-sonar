@@ -26,7 +26,7 @@ STEPS               = 30         # step size for discretization of half-circle
 BOUND               = 1          # 0=individual bound per row, 1=min/max over all rows
 USERCUTS            = 0          # 0=no user cuts, 1=user cuts on
 USERCUTSTRENGTH     = 1.0        # how deep must user cuts be to be separated?
-HEURISTIC           = 100       # 0=no heuristic, >0: with heuristic, number of rounds
+HEURISTIC           = 50       # 0=no heuristic, >0: with heuristic, number of rounds
 SOLVE               = 2          # 0=only root relaxation, 1=root+cuts, 2=to the end
 TIMELIMIT           = 86400      # time limit in seconds
 TIMELIMIT_HEURISTIC = 1728        # time limit in seconds
