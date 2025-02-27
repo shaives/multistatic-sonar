@@ -299,11 +299,15 @@ def check_line_bellhop(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, map_data, resolution)
     # Compute eigenrays
     rays = pm.compute_eigenrays(env)
 
-    if rays is None:
+
+    if rays is not None and not rays.empty:
+
         return None
     
-    arrivals = pm.compute_arrivals(env)
+    else:
     
-    return arrivals
+        arrivals = pm.compute_arrivals(env)
+        
+        return arrivals
 
 
