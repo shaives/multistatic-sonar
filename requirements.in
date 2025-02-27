@@ -1,0 +1,13 @@
+# Core optimization libraries
+numpy
+matplotlib
+pyomo
+cplex
+# For web interface
+streamlit
+folium
+streamlit-folium
+requests
+# For data processing
+pandas
+# Add constraints for specific versions if needed
