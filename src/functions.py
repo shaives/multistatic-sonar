@@ -257,8 +257,6 @@ def compute_coverage_triples(instance, map, ocean, ocean_surface, depth_layer_hi
 
     start_time_coverage = time.time()
 
-
-
     for tar_x, tar_y, tar_z in ocean: # target
 
         for tx_x, tx_y, tx_z in ocean_surface: # source
@@ -280,34 +278,26 @@ def compute_coverage_triples(instance, map, ocean, ocean_surface, depth_layer_hi
 
                             arrivals_tar_rx = check_line_bellhop(tar_x, tar_y, tar_z, rx_x, rx_y, rx_z, map, resolution)
 
-                        else:
+                            if arrivals_tar_rx is not None:
 
-                            continue
-                        
-                        if arrivals_tar_rx is not None:
+                                sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
+                                sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
 
-                            sqrt_tx_tar = 0.5 / ( sqrt((tx_x-tar_x)**2 + (tx_y-tar_y)**2 + (tx_z-tar_z)**2) )
-                            sqrt_rx_tar = 0.5 / ( sqrt((rx_x-tar_x)**2 + (rx_y-tar_y)**2 + (rx_z-tar_z)**2) )
+                                for theta in range(0, 180, instance.STEPS): # target angle
 
-                            for theta in range(0, 180, instance.STEPS): # target angle
+                                    my_theta = theta / 180.0 * pi
+                                    my_sin_theta = sin(my_theta)
+                                    my_cos_theta = cos(my_theta)
 
-                                my_theta = theta / 180.0 * pi
-                                my_sin_theta = sin(my_theta)
-                                my_cos_theta = cos(my_theta)
+                                    # checking if outside of direct blast  
+                                    if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for outside direct-blast-effect
 
-                                # still checking if outside of direct blast  
-                                if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) + d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) >= d(tx_x, tx_y, tx_z, rx_x, rx_y, rx_z, depth_layer_hight, resolution) + 2*rb: # check for outside direct-blast-effect
+                                        alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
+                                        
+                                        # calculate db at target here and only save the value if it is strong enough to be recieved by an reciever
+                                        if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= (rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
 
-                                    alpha = ( ((tx_x-tar_x) * my_cos_theta + (tx_y-tar_y) * my_sin_theta ) * sqrt_tx_tar + ((rx_x-tar_x) * my_cos_theta + (rx_y-tar_y) * my_sin_theta ) * sqrt_rx_tar )
-
-                                    #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
-                                    
-                                    # calculate db at target here and only save the value if it is strong enough to be recieved by an reciever
-                                    if d(tx_x, tx_y, tx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) * d(rx_x, rx_y, rx_z, tar_x, tar_y, tar_z, depth_layer_hight, resolution) <= (rho_0 + g(alpha, instance))**2: # check for inside range-of-day Cassini oval
-
-                                        detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
-
-                                        #print("target:",tar_x,tar_y,"angle:",theta,"source:",tx_x,tx_y,"receiver:",rx_x,rx_y,"E-angle:",alpha*180/pi,"TS:",g_cos(alpha))
+                                            detection_prob[tar_x, tar_y, tar_z, theta, tx_x, tx_y, tx_z, rx_x, rx_y, rx_z] = 1 # sure detection
 
     end_time_coverage = time.time()
 
