@@ -2,9 +2,6 @@ import numpy as np
 import re
 import time
 
-import arlpy.uwapm as pm
-import arlpy.plot as plt
-
 from math import *
 
 from src.bellhop import *
