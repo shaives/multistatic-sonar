@@ -6,7 +6,8 @@ import arlpy.uwapm as pm
 import arlpy.plot as plt
 
 from math import *
-from bellhop import check_line_bellhop
+
+from src.bellhop import *
 
 # Euclidean distance between two points
 def d(x1, y1, z1, x2, y2, z2, depth_layer_hight, resolution) -> float:
